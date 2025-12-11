@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.dresscode.ui.home.HomeFragment"
+        android:label="@string/title_home" />
+
+    <fragment
+        android:id="@+id/outfitsFragment"
+        android:name="com.example.dresscode.ui.outfits.OutfitsFragment"
+        android:label="@string/title_outfits" />
+
+    <fragment
+        android:id="@+id/swapFragment"
+        android:name="com.example.dresscode.ui.swap.SwapFragment"
+        android:label="@string/title_swap" />
+
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.dresscode.ui.profile.ProfileFragment"
+        android:label="@string/title_profile" />
+</navigation>

@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">DressCode</string>
+    <string name="title_home">首页</string>
+    <string name="title_outfits">穿搭</string>
+    <string name="title_swap">换装</string>
+    <string name="title_profile">我的</string>
+    <string name="placeholder_swap">上传/拍照人像，选择穿搭后生成</string>
+    <string name="placeholder_profile">个人中心、性别/筛选设置、收藏</string>
+    <string name="placeholder_city">定位中...</string>
+    <string name="placeholder_temperature">--℃</string>
+    <string name="placeholder_weather_desc">天气描述</string>
+    <string name="placeholder_aqi">空气质量 --</string>
+    <string name="placeholder_weather">天气页面占位</string>
+    <string name="title_recommend_today">今日推荐</string>
+    <string name="placeholder_outfit_title">穿搭标题</string>
+    <string name="placeholder_outfit_tags">风格/季节/场景 标签</string>
+    <string name="placeholder_recommend_meta">根据天气/季节推荐</string>
+    <string name="label_search_outfits">搜索穿搭</string>
+    <string name="filter_gender">性别</string>
+    <string name="filter_style">风格</string>
+    <string name="filter_season">季节</string>
+    <string name="filter_scene">场景</string>
+    <string name="filter_weather">天气</string>
+    <string name="desc_outfit_image">穿搭图片</string>
+    <string name="title_tips">穿搭小技巧</string>
+    <string name="tips_content_sample">穿搭公式：1) 基础款 + 1 个亮点；2) 色彩不超过 3 种。\n学生党加分：1) 不盲目跟风潮流；2) 避免全身 Logo 堆积；3) 注意版型合身。</string>
+</resources>
