@@ -9,6 +9,7 @@ import androidx.lifecycle.Transformations;
 
 import com.example.dresscode.R;
 import com.example.dresscode.data.local.ClosetItemEntity;
+import com.example.dresscode.data.prefs.AuthRepository;
 import com.example.dresscode.data.repository.ClosetRepository;
 import com.example.dresscode.model.RecommendItem;
 
@@ -21,7 +22,8 @@ public class HomeViewModel extends AndroidViewModel {
 
     public HomeViewModel(@NonNull Application application) {
         super(application);
-        ClosetRepository repository = new ClosetRepository(application);
+        String owner = new AuthRepository(application).getCurrentUsernameOrEmpty();
+        ClosetRepository repository = new ClosetRepository(application, owner);
         recommendations = Transformations.map(repository.observeAll(), this::buildRecommendations);
     }
 

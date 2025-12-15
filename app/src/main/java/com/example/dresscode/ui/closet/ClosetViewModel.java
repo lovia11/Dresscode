@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
+import com.example.dresscode.data.prefs.AuthRepository;
 import com.example.dresscode.data.local.ClosetItemEntity;
 import com.example.dresscode.data.repository.ClosetRepository;
 
@@ -18,7 +19,8 @@ public class ClosetViewModel extends AndroidViewModel {
 
     public ClosetViewModel(@NonNull Application application) {
         super(application);
-        repository = new ClosetRepository(application);
+        String owner = new AuthRepository(application).getCurrentUsernameOrEmpty();
+        repository = new ClosetRepository(application, owner);
         closetItems = repository.observeAll();
     }
 
@@ -29,5 +31,8 @@ public class ClosetViewModel extends AndroidViewModel {
     public void add(ClosetItemEntity item) {
         repository.add(item);
     }
-}
 
+    public void delete(long id) {
+        repository.delete(id);
+    }
+}

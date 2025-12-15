@@ -10,14 +10,19 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 
 import com.example.dresscode.data.local.OutfitCardRow;
+import com.example.dresscode.data.local.SwapHistoryRow;
+import com.example.dresscode.data.prefs.AuthRepository;
 import com.example.dresscode.data.repository.OutfitRepository;
+import com.example.dresscode.data.repository.SwapRepository;
 
 import java.util.List;
 
 public class SwapViewModel extends AndroidViewModel {
 
     private final OutfitRepository repository;
+    private final SwapRepository swapRepository;
     private final LiveData<List<OutfitCardRow>> favoriteOutfits;
+    private final LiveData<List<SwapHistoryRow>> history;
 
     private final MutableLiveData<Long> selectedOutfitId = new MutableLiveData<>(-1L);
     private final MutableLiveData<String> personImageUri = new MutableLiveData<>("");
@@ -27,9 +32,12 @@ public class SwapViewModel extends AndroidViewModel {
 
     public SwapViewModel(@NonNull Application application) {
         super(application);
-        repository = new OutfitRepository(application);
+        String owner = new AuthRepository(application).getCurrentUsernameOrEmpty();
+        repository = new OutfitRepository(application, owner);
+        swapRepository = new SwapRepository(application, owner);
         repository.ensureSeeded();
         favoriteOutfits = repository.observeFavoriteOutfits();
+        history = swapRepository.observeHistory();
 
         selectedOutfit = Transformations.map(favoriteOutfits, items -> {
             Long id = selectedOutfitId.getValue();
@@ -51,6 +59,10 @@ public class SwapViewModel extends AndroidViewModel {
 
     public LiveData<List<OutfitCardRow>> getFavoriteOutfits() {
         return favoriteOutfits;
+    }
+
+    public LiveData<List<SwapHistoryRow>> getHistory() {
+        return history;
     }
 
     public MutableLiveData<Long> getSelectedOutfitId() {
@@ -79,6 +91,19 @@ public class SwapViewModel extends AndroidViewModel {
         return canGenerate;
     }
 
+    public void generateSwap() {
+        Long id = selectedOutfitId.getValue();
+        String uri = personImageUri.getValue();
+        if (id == null || id < 0 || uri == null || uri.trim().isEmpty()) {
+            return;
+        }
+        swapRepository.addJob(id, uri, uri, "已生成");
+    }
+
+    public void deleteHistory(long id) {
+        swapRepository.deleteJob(id);
+    }
+
     private void updateCanGenerate() {
         Long id = selectedOutfitId.getValue();
         String uri = personImageUri.getValue();
@@ -86,4 +111,3 @@ public class SwapViewModel extends AndroidViewModel {
         canGenerate.setValue(ok);
     }
 }
-

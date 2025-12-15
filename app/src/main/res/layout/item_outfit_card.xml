@@ -33,8 +33,7 @@
                 android:layout_margin="8dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/action_toggle_favorite"
-                android:src="@android:drawable/btn_star_big_off"
-                app:tint="?attr/colorPrimary" />
+                android:src="@android:drawable/btn_star_big_off" />
         </FrameLayout>
 
         <LinearLayout

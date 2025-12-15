@@ -28,4 +28,9 @@
         android:id="@+id/closetFragment"
         android:name="com.example.dresscode.ui.closet.ClosetFragment"
         android:label="@string/title_closet" />
+
+    <fragment
+        android:id="@+id/weatherFragment"
+        android:name="com.example.dresscode.ui.weather.WeatherFragment"
+        android:label="@string/title_weather" />
 </navigation>

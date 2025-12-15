@@ -5,6 +5,9 @@
     <string name="title_swap">换装</string>
     <string name="title_profile">我的</string>
     <string name="title_closet">衣橱</string>
+    <string name="title_weather">天气</string>
+    <string name="title_login">登录</string>
+    <string name="title_register">注册</string>
     <string name="placeholder_swap">上传/拍照人像，选择穿搭后生成</string>
     <string name="placeholder_profile">个人中心、性别/筛选设置、收藏</string>
     <string name="placeholder_city">定位中...</string>
@@ -41,6 +44,24 @@
     <string name="placeholder_swap_no_favorites">还没有收藏穿搭，去“穿搭”页点星标收藏吧。</string>
     <string name="action_generate_swap">生成换装（占位）</string>
     <string name="placeholder_swap_result">换装结果会展示在这里（后续接大模型/接口）。</string>
+    <string name="title_swap_history">历史记录</string>
+
+    <string name="label_weather_city">城市</string>
+
+    <string name="label_username">账号</string>
+    <string name="label_password">密码</string>
+    <string name="label_nickname">昵称（可选）</string>
+    <string name="label_avatar">头像</string>
+    <string name="action_pick_avatar">选择头像</string>
+    <string name="action_save_profile">保存资料</string>
+    <string name="action_login">登录</string>
+    <string name="action_register">注册</string>
+    <string name="action_switch_to_register">没有账号？去注册</string>
+    <string name="action_switch_to_login">已有账号？去登录</string>
+    <string name="action_logout">退出登录</string>
+    <string name="error_login_empty">请输入账号和密码</string>
+    <string name="error_login_failed">账号或密码错误</string>
+    <string name="label_current_user">当前账号：</string>
 
     <string-array name="filter_gender_options">
         <item>跟随设置</item>
@@ -95,6 +116,9 @@
     <string name="action_pick_from_gallery">从相册选择</string>
     <string name="action_save">保存</string>
     <string name="error_image_import_failed">图片导入失败，请重试。</string>
+    <string name="action_delete">删除</string>
+    <string name="confirm_delete_clothing">确定删除“%1$s”吗？</string>
+    <string name="confirm_delete_history">确定删除这条记录（%1$s）吗？</string>
     <string name="label_clothing_name">名称</string>
     <string name="label_clothing_category">类别</string>
     <string name="label_clothing_color">颜色（可选）</string>

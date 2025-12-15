@@ -20,7 +20,7 @@ public class OutfitCardRow {
     public String weather;
     @NonNull
     public String colorHex;
+    public int coverResId;
     public long createdAt;
     public boolean isFavorite;
 }
-

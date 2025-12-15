@@ -25,6 +25,7 @@ public class OutfitEntity {
     public String weather;
     @NonNull
     public String colorHex;
+    public int coverResId;
 
     public long createdAt;
 
@@ -37,6 +38,7 @@ public class OutfitEntity {
             @NonNull String scene,
             @NonNull String weather,
             @NonNull String colorHex,
+            int coverResId,
             long createdAt
     ) {
         this.title = title;
@@ -47,7 +49,7 @@ public class OutfitEntity {
         this.scene = scene;
         this.weather = weather;
         this.colorHex = colorHex;
+        this.coverResId = coverResId;
         this.createdAt = createdAt;
     }
 }
-

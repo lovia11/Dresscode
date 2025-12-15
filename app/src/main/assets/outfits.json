@@ -1,0 +1,69 @@
+[
+  {
+    "title": "通勤白衬衫 + 西裤",
+    "tags": "通勤 · 极简 · 显瘦",
+    "gender": "MALE",
+    "style": "通勤",
+    "season": "春秋",
+    "scene": "通勤",
+    "weather": "晴",
+    "colorHex": "#E3F2FD",
+    "cover": "ic_outfit_top"
+  },
+  {
+    "title": "运动速干套装",
+    "tags": "运动 · 透气 · 轻便",
+    "gender": "UNISEX",
+    "style": "运动",
+    "season": "夏",
+    "scene": "运动",
+    "weather": "热",
+    "colorHex": "#E8F5E9",
+    "cover": "ic_outfit_shoes"
+  },
+  {
+    "title": "法式连衣裙",
+    "tags": "约会 · 温柔 · 气质",
+    "gender": "FEMALE",
+    "style": "约会",
+    "season": "春夏",
+    "scene": "约会",
+    "weather": "晴",
+    "colorHex": "#FCE4EC",
+    "cover": "ic_outfit_dress"
+  },
+  {
+    "title": "卫衣 + 牛仔裤",
+    "tags": "休闲 · 校园 · 百搭",
+    "gender": "UNISEX",
+    "style": "休闲",
+    "season": "春秋",
+    "scene": "校园",
+    "weather": "多云",
+    "colorHex": "#FFF3E0",
+    "cover": "ic_outfit_pants"
+  },
+  {
+    "title": "风衣 + 针织衫",
+    "tags": "通勤 · 叠穿 · 有层次",
+    "gender": "UNISEX",
+    "style": "通勤",
+    "season": "秋",
+    "scene": "通勤",
+    "weather": "冷",
+    "colorHex": "#EDE7F6",
+    "cover": "ic_outfit_outer"
+  },
+  {
+    "title": "雨天防水外套",
+    "tags": "雨天 · 实用 · 防风",
+    "gender": "UNISEX",
+    "style": "机能",
+    "season": "秋冬",
+    "scene": "通勤",
+    "weather": "雨",
+    "colorHex": "#E1F5FE",
+    "cover": "ic_outfit_outer"
+  }
+]
+

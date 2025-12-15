@@ -23,6 +23,11 @@
         </provider>
 
         <activity
+            android:name=".LoginActivity"
+            android:exported="false"
+            android:theme="@style/Theme.DressCode" />
+
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

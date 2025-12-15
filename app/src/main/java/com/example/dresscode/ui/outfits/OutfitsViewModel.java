@@ -11,6 +11,7 @@ import androidx.lifecycle.Transformations;
 
 import com.example.dresscode.R;
 import com.example.dresscode.data.local.OutfitCardRow;
+import com.example.dresscode.data.prefs.AuthRepository;
 import com.example.dresscode.data.prefs.UserPreferencesRepository;
 import com.example.dresscode.data.repository.OutfitRepository;
 
@@ -40,7 +41,8 @@ public class OutfitsViewModel extends AndroidViewModel {
 
     public OutfitsViewModel(@NonNull Application application) {
         super(application);
-        repository = new OutfitRepository(application);
+        String owner = new AuthRepository(application).getCurrentUsernameOrEmpty();
+        repository = new OutfitRepository(application, owner);
         prefs = new UserPreferencesRepository(application);
 
         repository.ensureSeeded();

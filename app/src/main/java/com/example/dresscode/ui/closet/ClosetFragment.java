@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 
+import com.example.dresscode.data.prefs.AuthRepository;
 import com.example.dresscode.R;
 import com.example.dresscode.data.local.ClosetItemEntity;
 import com.example.dresscode.databinding.DialogAddClothingBinding;
@@ -33,6 +34,7 @@ public class ClosetFragment extends Fragment {
     private FragmentClosetBinding binding;
     private ClosetViewModel viewModel;
     private ClosetAdapter adapter;
+    private String owner;
 
     private ActivityResultLauncher<Uri> takePictureLauncher;
     private ActivityResultLauncher<String> pickImageLauncher;
@@ -47,7 +49,13 @@ public class ClosetFragment extends Fragment {
         binding = FragmentClosetBinding.inflate(inflater, container, false);
 
         viewModel = new ViewModelProvider(this).get(ClosetViewModel.class);
-        adapter = new ClosetAdapter();
+        owner = new AuthRepository(requireContext()).getCurrentUsernameOrEmpty();
+        adapter = new ClosetAdapter(item -> new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.action_delete)
+                .setMessage(getString(R.string.confirm_delete_clothing, item.name))
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.action_delete, (d, w) -> viewModel.delete(item.id))
+                .show());
 
         binding.recyclerCloset.setLayoutManager(new GridLayoutManager(getContext(), 2));
         binding.recyclerCloset.setAdapter(adapter);
@@ -129,7 +137,8 @@ public class ClosetFragment extends Fragment {
 
     private void showAddItemDialog(File imageFile, Uri imageUri) {
         DialogAddClothingBinding dialogBinding = DialogAddClothingBinding.inflate(getLayoutInflater());
-        dialogBinding.imagePreview.setImageURI(imageUri);
+        Uri previewUri = imageFile != null ? Uri.fromFile(imageFile) : imageUri;
+        dialogBinding.imagePreview.setImageURI(previewUri);
 
         String[] categories = getResources().getStringArray(R.array.closet_categories);
         dialogBinding.inputCategory.setAdapter(new ArrayAdapter<>(
@@ -171,10 +180,12 @@ public class ClosetFragment extends Fragment {
                         category = getString(R.string.default_category);
                     }
 
+                    String storedUri = imageFile != null ? Uri.fromFile(imageFile).toString() : imageUri.toString();
                     ClosetItemEntity item = new ClosetItemEntity(
+                            owner,
                             name,
                             category,
-                            imageUri.toString(),
+                            storedUri,
                             color,
                             season,
                             style,

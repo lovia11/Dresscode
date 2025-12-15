@@ -9,10 +9,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.dresscode.R;
 import com.example.dresscode.databinding.FragmentHomeBinding;
 import com.example.dresscode.ui.home.adapter.HomeRecommendAdapter;
+import com.example.dresscode.ui.weather.WeatherViewModel;
 
 public class HomeFragment extends Fragment {
 
@@ -32,6 +35,19 @@ public class HomeFragment extends Fragment {
 
         HomeViewModel viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
         viewModel.getRecommendations().observe(getViewLifecycleOwner(), items -> adapter.submitList(items));
+
+        WeatherViewModel weatherViewModel = new ViewModelProvider(requireActivity()).get(WeatherViewModel.class);
+        weatherViewModel.getWeatherInfo().observe(getViewLifecycleOwner(), info -> {
+            if (info == null) {
+                return;
+            }
+            binding.textCity.setText(info.city);
+            binding.textTemp.setText(info.temp);
+            binding.textWeatherDesc.setText(info.desc);
+            binding.textAqi.setText(info.aqi);
+        });
+
+        binding.cardWeather.setOnClickListener(v -> NavHostFragment.findNavController(this).navigate(R.id.weatherFragment));
         return binding.getRoot();
     }
 

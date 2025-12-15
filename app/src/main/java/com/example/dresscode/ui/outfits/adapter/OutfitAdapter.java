@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.dresscode.data.local.OutfitCardRow;
 import com.example.dresscode.databinding.ItemOutfitCardBinding;
+import com.google.android.material.color.MaterialColors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +51,12 @@ public class OutfitAdapter extends RecyclerView.Adapter<OutfitAdapter.ViewHolder
         holder.binding.btnFavorite.setImageResource(
                 item.isFavorite ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off
         );
+        int tint = MaterialColors.getColor(
+                holder.binding.btnFavorite,
+                item.isFavorite ? androidx.appcompat.R.attr.colorPrimary : com.google.android.material.R.attr.colorOnSurfaceVariant
+        );
+        holder.binding.btnFavorite.setImageTintList(android.content.res.ColorStateList.valueOf(tint));
+        holder.binding.btnFavorite.setAlpha(item.isFavorite ? 1f : 0.6f);
         holder.binding.btnFavorite.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onToggleFavorite(item);
@@ -58,7 +65,12 @@ public class OutfitAdapter extends RecyclerView.Adapter<OutfitAdapter.ViewHolder
 
         int bg = ColorUtil.parseColorSafe(item.colorHex, 0xFFEEEEEE);
         holder.binding.imageCover.setBackgroundColor(bg);
-        holder.binding.imageCover.setImageDrawable(null);
+        if (item.coverResId != 0) {
+            holder.binding.imageCover.setScaleType(android.widget.ImageView.ScaleType.CENTER_INSIDE);
+            holder.binding.imageCover.setImageResource(item.coverResId);
+        } else {
+            holder.binding.imageCover.setImageDrawable(null);
+        }
     }
 
     @Override

@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.dresscode.databinding.FragmentSwapBinding;
 import com.example.dresscode.ui.swap.adapter.SwapFavoriteAdapter;
+import com.example.dresscode.ui.swap.adapter.SwapHistoryAdapter;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
@@ -26,6 +27,7 @@ public class SwapFragment extends Fragment {
     private FragmentSwapBinding binding;
     private SwapViewModel viewModel;
     private SwapFavoriteAdapter adapter;
+    private SwapHistoryAdapter historyAdapter;
 
     private ActivityResultLauncher<Uri> takePictureLauncher;
     private ActivityResultLauncher<String> pickImageLauncher;
@@ -46,6 +48,15 @@ public class SwapFragment extends Fragment {
                 new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false)
         );
         binding.recyclerFavorites.setAdapter(adapter);
+
+        historyAdapter = new SwapHistoryAdapter(row -> new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(com.example.dresscode.R.string.action_delete)
+                .setMessage(getString(com.example.dresscode.R.string.confirm_delete_history, row.outfitTitle))
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(com.example.dresscode.R.string.action_delete, (d, w) -> viewModel.deleteHistory(row.id))
+                .show());
+        binding.recyclerHistory.setLayoutManager(new LinearLayoutManager(getContext()));
+        binding.recyclerHistory.setAdapter(historyAdapter);
 
         takePictureLauncher = registerForActivityResult(
                 new ActivityResultContracts.TakePicture(),
@@ -85,6 +96,7 @@ public class SwapFragment extends Fragment {
             binding.imageResult.setImageURI(null);
             binding.imageResult.setImageURI(Uri.parse(personUri));
             binding.textResultHint.setText(com.example.dresscode.R.string.placeholder_swap_result);
+            viewModel.generateSwap();
         });
 
         viewModel.getFavoriteOutfits().observe(getViewLifecycleOwner(), items -> {
@@ -115,6 +127,8 @@ public class SwapFragment extends Fragment {
         });
 
         viewModel.getCanGenerate().observe(getViewLifecycleOwner(), can -> binding.btnGenerate.setEnabled(Boolean.TRUE.equals(can)));
+
+        viewModel.getHistory().observe(getViewLifecycleOwner(), rows -> historyAdapter.submitList(rows));
 
         return binding.getRoot();
     }

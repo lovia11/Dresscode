@@ -9,10 +9,18 @@ import java.util.List;
 
 @Dao
 public interface ClosetDao {
-    @Query("SELECT * FROM closet_items ORDER BY createdAt DESC")
-    LiveData<List<ClosetItemEntity>> observeAll();
+    @Query("SELECT * FROM closet_items WHERE owner = :owner ORDER BY createdAt DESC")
+    LiveData<List<ClosetItemEntity>> observeAll(String owner);
 
     @Insert
     long insert(ClosetItemEntity item);
-}
 
+    @Query("SELECT * FROM closet_items WHERE id = :id AND owner = :owner LIMIT 1")
+    ClosetItemEntity getById(long id, String owner);
+
+    @Query("DELETE FROM closet_items WHERE id = :id AND owner = :owner")
+    int deleteById(long id, String owner);
+
+    @Query("UPDATE closet_items SET owner = :owner WHERE owner = ''")
+    int claimLegacy(String owner);
+}

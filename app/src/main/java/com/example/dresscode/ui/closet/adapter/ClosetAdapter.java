@@ -15,7 +15,16 @@ import java.util.List;
 
 public class ClosetAdapter extends RecyclerView.Adapter<ClosetAdapter.ViewHolder> {
 
+    public interface Listener {
+        void onLongPress(ClosetItemEntity item);
+    }
+
     private final List<ClosetItemEntity> data = new ArrayList<>();
+    private final Listener listener;
+
+    public ClosetAdapter(Listener listener) {
+        this.listener = listener;
+    }
 
     public void submitList(List<ClosetItemEntity> items) {
         data.clear();
@@ -38,6 +47,13 @@ public class ClosetAdapter extends RecyclerView.Adapter<ClosetAdapter.ViewHolder
         ClosetItemEntity item = data.get(position);
         holder.binding.textName.setText(item.name);
         holder.binding.textMeta.setText(item.category + " · " + item.season + " · " + item.style);
+        holder.binding.getRoot().setOnLongClickListener(v -> {
+            if (listener != null) {
+                listener.onLongPress(item);
+                return true;
+            }
+            return false;
+        });
         try {
             Uri uri = Uri.parse(item.imageUri);
             holder.binding.imageClothing.setImageURI(null);

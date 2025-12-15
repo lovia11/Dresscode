@@ -10,6 +10,9 @@ public class ClosetItemEntity {
     public long id;
 
     @NonNull
+    public String owner;
+
+    @NonNull
     public String name;
 
     @NonNull
@@ -30,6 +33,7 @@ public class ClosetItemEntity {
     public long createdAt;
 
     public ClosetItemEntity(
+            @NonNull String owner,
             @NonNull String name,
             @NonNull String category,
             @NonNull String imageUri,
@@ -38,6 +42,7 @@ public class ClosetItemEntity {
             @NonNull String style,
             long createdAt
     ) {
+        this.owner = owner;
         this.name = name;
         this.category = category;
         this.imageUri = imageUri;
@@ -47,4 +52,3 @@ public class ClosetItemEntity {
         this.createdAt = createdAt;
     }
 }
-

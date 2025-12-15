@@ -20,14 +20,17 @@ public interface OutfitDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     long insertFavorite(FavoriteEntity favorite);
 
-    @Query("DELETE FROM favorites WHERE outfitId = :outfitId")
-    int deleteFavoriteByOutfitId(long outfitId);
+    @Query("DELETE FROM favorites WHERE owner = :owner AND outfitId = :outfitId")
+    int deleteFavoriteByOutfitId(String owner, long outfitId);
+
+    @Query("UPDATE favorites SET owner = :owner WHERE owner = ''")
+    int claimLegacyFavorites(String owner);
 
     @Query(
-            "SELECT o.id, o.title, o.tags, o.gender, o.style, o.season, o.scene, o.weather, o.colorHex, o.createdAt, " +
+            "SELECT o.id, o.title, o.tags, o.gender, o.style, o.season, o.scene, o.weather, o.colorHex, o.coverResId, o.createdAt, " +
                     "CASE WHEN f.outfitId IS NULL THEN 0 ELSE 1 END AS isFavorite " +
                     "FROM outfits o " +
-                    "LEFT JOIN favorites f ON f.outfitId = o.id " +
+                    "LEFT JOIN favorites f ON f.outfitId = o.id AND f.owner = :owner " +
                     "WHERE (:query IS NULL OR :query = '' OR o.title LIKE '%' || :query || '%' OR o.tags LIKE '%' || :query || '%') " +
                     "AND (:gender IS NULL OR :gender = '' OR o.gender = :gender OR o.gender = 'UNISEX') " +
                     "AND (:style IS NULL OR :style = '' OR o.style = :style) " +
@@ -37,6 +40,7 @@ public interface OutfitDao {
                     "ORDER BY o.createdAt DESC"
     )
     LiveData<List<OutfitCardRow>> observeOutfits(
+            String owner,
             String query,
             String gender,
             String style,
@@ -46,12 +50,11 @@ public interface OutfitDao {
     );
 
     @Query(
-            "SELECT o.id, o.title, o.tags, o.gender, o.style, o.season, o.scene, o.weather, o.colorHex, o.createdAt, " +
+            "SELECT o.id, o.title, o.tags, o.gender, o.style, o.season, o.scene, o.weather, o.colorHex, o.coverResId, o.createdAt, " +
                     "1 AS isFavorite " +
                     "FROM outfits o " +
-                    "INNER JOIN favorites f ON f.outfitId = o.id " +
+                    "INNER JOIN favorites f ON f.outfitId = o.id AND f.owner = :owner " +
                     "ORDER BY f.createdAt DESC"
     )
-    LiveData<List<OutfitCardRow>> observeFavoriteOutfits();
+    LiveData<List<OutfitCardRow>> observeFavoriteOutfits(String owner);
 }
-
