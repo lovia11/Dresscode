@@ -4,6 +4,7 @@
     <string name="title_outfits">穿搭</string>
     <string name="title_swap">换装</string>
     <string name="title_profile">我的</string>
+    <string name="title_closet">衣橱</string>
     <string name="placeholder_swap">上传/拍照人像，选择穿搭后生成</string>
     <string name="placeholder_profile">个人中心、性别/筛选设置、收藏</string>
     <string name="placeholder_city">定位中...</string>
@@ -12,6 +13,7 @@
     <string name="placeholder_aqi">空气质量 --</string>
     <string name="placeholder_weather">天气页面占位</string>
     <string name="title_recommend_today">今日推荐</string>
+    <string name="placeholder_recommend_empty">先去衣橱添加几件衣服，我再给你推荐今日穿搭。</string>
     <string name="placeholder_outfit_title">穿搭标题</string>
     <string name="placeholder_outfit_tags">风格/季节/场景 标签</string>
     <string name="placeholder_recommend_meta">根据天气/季节推荐</string>
@@ -24,4 +26,29 @@
     <string name="desc_outfit_image">穿搭图片</string>
     <string name="title_tips">穿搭小技巧</string>
     <string name="tips_content_sample">穿搭公式：1) 基础款 + 1 个亮点；2) 色彩不超过 3 种。\n学生党加分：1) 不盲目跟风潮流；2) 避免全身 Logo 堆积；3) 注意版型合身。</string>
+
+    <string name="placeholder_closet_empty">衣橱还是空的。\n点击右下角 + 添加你的衣服吧。</string>
+    <string name="action_add_clothing">添加衣服</string>
+    <string name="title_add_clothing">添加衣服</string>
+    <string name="action_take_photo">拍照添加</string>
+    <string name="action_pick_from_gallery">从相册选择</string>
+    <string name="action_save">保存</string>
+    <string name="error_image_import_failed">图片导入失败，请重试。</string>
+    <string name="label_clothing_name">名称</string>
+    <string name="label_clothing_category">类别</string>
+    <string name="label_clothing_color">颜色（可选）</string>
+    <string name="label_clothing_season">季节（可选）</string>
+    <string name="label_clothing_style">风格（可选）</string>
+    <string name="default_unknown">未知</string>
+    <string name="default_category">未分类</string>
+    <string name="default_clothing_name">%1$s</string>
+
+    <string-array name="closet_categories">
+        <item>上衣</item>
+        <item>下装</item>
+        <item>外套</item>
+        <item>连衣裙</item>
+        <item>鞋子</item>
+        <item>配饰</item>
+    </string-array>
 </resources>

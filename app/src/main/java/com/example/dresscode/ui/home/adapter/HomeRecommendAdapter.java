@@ -6,26 +6,21 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.dresscode.model.RecommendItem;
 import com.example.dresscode.databinding.ItemHomeRecommendBinding;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class HomeRecommendAdapter extends RecyclerView.Adapter<HomeRecommendAdapter.ViewHolder> {
+    private final List<RecommendItem> data = new ArrayList<>();
 
-    public static class RecommendItem {
-        public final String title;
-        public final String meta;
-
-        public RecommendItem(String title, String meta) {
-            this.title = title;
-            this.meta = meta;
+    public void submitList(List<RecommendItem> items) {
+        data.clear();
+        if (items != null) {
+            data.addAll(items);
         }
-    }
-
-    private final List<RecommendItem> data;
-
-    public HomeRecommendAdapter(List<RecommendItem> data) {
-        this.data = data;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -41,6 +36,16 @@ public class HomeRecommendAdapter extends RecyclerView.Adapter<HomeRecommendAdap
         RecommendItem item = data.get(position);
         holder.binding.textTitle.setText(item.title);
         holder.binding.textMeta.setText(item.meta);
+        if (item.imageUri != null && !item.imageUri.trim().isEmpty()) {
+            try {
+                holder.binding.imageCover.setImageURI(null);
+                holder.binding.imageCover.setImageURI(android.net.Uri.parse(item.imageUri));
+            } catch (Exception e) {
+                holder.binding.imageCover.setImageURI(null);
+            }
+        } else {
+            holder.binding.imageCover.setImageURI(null);
+        }
     }
 
     @Override

@@ -17,6 +17,11 @@
         android:title="@string/title_swap" />
 
     <item
+        android:id="@+id/closetFragment"
+        android:icon="@android:drawable/ic_menu_camera"
+        android:title="@string/title_closet" />
+
+    <item
         android:id="@+id/profileFragment"
         android:icon="@android:drawable/ic_menu_myplaces"
         android:title="@string/title_profile" />

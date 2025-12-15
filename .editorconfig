@@ -1,0 +1,9 @@
+root = true
+
+[*]
+charset = utf-8
+insert_final_newline = true
+
+[*.{java,kt,kts,xml,gradle,properties,md,txt}]
+charset = utf-8
+

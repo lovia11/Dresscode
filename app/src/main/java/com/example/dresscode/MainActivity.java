@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
                 R.id.homeFragment,
                 R.id.outfitsFragment,
                 R.id.swapFragment,
+                R.id.closetFragment,
                 R.id.profileFragment
         ).build();
         NavigationUI.setupWithNavController(binding.toolbar, navController, appBarConfiguration);

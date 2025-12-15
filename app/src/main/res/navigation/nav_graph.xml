@@ -23,4 +23,9 @@
         android:id="@+id/profileFragment"
         android:name="com.example.dresscode.ui.profile.ProfileFragment"
         android:label="@string/title_profile" />
+
+    <fragment
+        android:id="@+id/closetFragment"
+        android:name="com.example.dresscode.ui.closet.ClosetFragment"
+        android:label="@string/title_closet" />
 </navigation>
