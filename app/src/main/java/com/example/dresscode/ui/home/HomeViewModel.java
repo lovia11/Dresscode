@@ -13,7 +13,6 @@ import com.example.dresscode.data.prefs.AuthRepository;
 import com.example.dresscode.data.prefs.UserPreferencesRepository;
 import com.example.dresscode.data.prefs.WeatherPreferencesRepository;
 import com.example.dresscode.data.repository.ClosetRepository;
-import com.example.dresscode.data.repository.WeatherRepository;
 import com.example.dresscode.model.RecommendItem;
 
 import java.util.ArrayList;
@@ -23,13 +22,12 @@ public class HomeViewModel extends AndroidViewModel {
 
     private final androidx.lifecycle.MediatorLiveData<List<RecommendItem>> recommendations = new androidx.lifecycle.MediatorLiveData<>();
 
-    private final WeatherRepository weatherRepository = new WeatherRepository();
     private final UserPreferencesRepository userPrefs;
     private final WeatherPreferencesRepository weatherPrefs;
 
     private List<ClosetItemEntity> closetItems = new ArrayList<>();
     private String gender = "";
-    private String city = "";
+    private WeatherPreferencesRepository.Snapshot weatherSnapshot = new WeatherPreferencesRepository.Snapshot("", "", "", "");
 
     public HomeViewModel(@NonNull Application application) {
         super(application);
@@ -47,7 +45,11 @@ public class HomeViewModel extends AndroidViewModel {
             update();
         });
         recommendations.addSource(weatherPrefs.observeCity(), c -> {
-            city = c == null ? "" : c;
+            // city change will also update snapshot; keep for compatibility
+            update();
+        });
+        recommendations.addSource(weatherPrefs.observeSnapshot(), s -> {
+            weatherSnapshot = s == null ? new WeatherPreferencesRepository.Snapshot("", "", "", "") : s;
             update();
         });
         update();
@@ -58,14 +60,16 @@ public class HomeViewModel extends AndroidViewModel {
     }
 
     private void update() {
-        recommendations.setValue(buildRecommendations(closetItems, gender, city));
+        recommendations.setValue(buildRecommendations(closetItems, gender, weatherSnapshot));
     }
 
-    private List<RecommendItem> buildRecommendations(List<ClosetItemEntity> closetItems, String gender, String city) {
+    private List<RecommendItem> buildRecommendations(List<ClosetItemEntity> closetItems, String gender, WeatherPreferencesRepository.Snapshot snapshot) {
         List<RecommendItem> result = new ArrayList<>();
-        WeatherRepository.WeatherInfo weather = weatherRepository.getWeatherForCity(city);
+        String city = snapshot.city == null || snapshot.city.trim().isEmpty() ? "杭州" : snapshot.city.trim();
+        String temp = snapshot.temp == null || snapshot.temp.trim().isEmpty() ? "--℃" : snapshot.temp.trim();
+        String desc = snapshot.desc == null || snapshot.desc.trim().isEmpty() ? "天气" : snapshot.desc.trim();
         String genderLabel = genderLabel(gender);
-        String weatherMeta = weather.city + " " + weather.temp + " · " + weather.desc + " · " + genderLabel;
+        String weatherMeta = city + " " + temp + " · " + desc + " · " + genderLabel;
 
         if (closetItems == null || closetItems.isEmpty()) {
             result.add(new RecommendItem(
@@ -77,9 +81,9 @@ public class HomeViewModel extends AndroidViewModel {
             return result;
         }
 
-        String seasonHint = seasonFromTemp(weather.temp);
-        boolean rainy = weather.desc.contains("雨");
-        boolean cold = parseTemp(weather.temp) <= 10;
+        String seasonHint = seasonFromTemp(temp);
+        boolean rainy = desc.contains("雨");
+        boolean cold = parseTemp(temp) <= 10;
 
         ClosetItemEntity dress = pickFirstPreferSeason(closetItems, "连衣裙", seasonHint);
         ClosetItemEntity top = pickFirstPreferSeason(closetItems, "上衣", seasonHint);

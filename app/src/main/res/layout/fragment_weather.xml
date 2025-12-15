@@ -36,6 +36,34 @@
                     android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_locate"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/action_locate_city" />
+
+            <TextView
+                android:id="@+id/text_status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/label_weather_status_loading"
+                android:textAppearance="?attr/textAppearanceBodySmall"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/text_error"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textAppearance="?attr/textAppearanceBodySmall"
+                android:textColor="@android:color/holo_red_dark"
+                android:visibility="gone"
+                tools:text="请求失败" />
+
             <TextView
                 android:id="@+id/text_temp"
                 android:layout_width="match_parent"

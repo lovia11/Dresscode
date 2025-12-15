@@ -2,9 +2,20 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
+import java.util.Properties
+
 android {
     namespace = "com.example.dresscode"
     compileSdk = 36
+
+    val localProperties = Properties().apply {
+        val file = rootProject.file("local.properties")
+        if (file.exists()) {
+            file.inputStream().use { load(it) }
+        }
+    }
+    val qweatherKey: String = localProperties.getProperty("QWEATHER_KEY", "")
+    val amapKey: String = localProperties.getProperty("AMAP_KEY", "")
 
     defaultConfig {
         applicationId = "com.example.dresscode"
@@ -14,10 +25,14 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "QWEATHER_KEY", "\"$qweatherKey\"")
+        buildConfigField("String", "AMAP_KEY", "\"$amapKey\"")
     }
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     buildTypes {
@@ -52,6 +67,7 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.okhttp.logging)
+    implementation(libs.play.services.location)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
