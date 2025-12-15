@@ -57,4 +57,13 @@ public interface OutfitDao {
                     "ORDER BY f.createdAt DESC"
     )
     LiveData<List<OutfitCardRow>> observeFavoriteOutfits(String owner);
+
+    @Query(
+            "SELECT o.id, o.title, o.tags, o.gender, o.style, o.season, o.scene, o.weather, o.colorHex, o.coverResId, " +
+                    "CASE WHEN f.outfitId IS NULL THEN 0 ELSE 1 END AS isFavorite " +
+                    "FROM outfits o " +
+                    "LEFT JOIN favorites f ON f.outfitId = o.id AND f.owner = :owner " +
+                    "WHERE o.id = :id LIMIT 1"
+    )
+    LiveData<OutfitDetailRow> observeOutfitDetail(String owner, long id);
 }

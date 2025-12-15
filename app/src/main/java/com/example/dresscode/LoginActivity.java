@@ -10,6 +10,8 @@ import com.example.dresscode.data.prefs.AuthRepository;
 import com.example.dresscode.databinding.ActivityLoginBinding;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import java.util.List;
+
 public class LoginActivity extends AppCompatActivity {
 
     private ActivityLoginBinding binding;
@@ -38,6 +40,10 @@ public class LoginActivity extends AppCompatActivity {
             }
 
             if (isRegisterMode) {
+                if (auth.hasUser(username)) {
+                    showMessage(getString(R.string.error_register_exists));
+                    return;
+                }
                 String nickname = binding.editNickname.getText() == null ? "" : binding.editNickname.getText().toString();
                 auth.register(username, password, nickname);
                 goMain();
@@ -56,12 +62,25 @@ public class LoginActivity extends AppCompatActivity {
             isRegisterMode = !isRegisterMode;
             updateModeUi();
         });
+
+        binding.btnPickUser.setOnClickListener(v -> {
+            List<String> users = auth.getAllUsernames();
+            if (users.isEmpty()) {
+                return;
+            }
+            String[] items = users.toArray(new String[0]);
+            new MaterialAlertDialogBuilder(this)
+                    .setTitle(R.string.action_pick_registered_user)
+                    .setItems(items, (d, which) -> binding.editUsername.setText(items[which]))
+                    .show();
+        });
     }
 
     private void updateModeUi() {
         binding.textTitle.setText(isRegisterMode ? R.string.title_register : R.string.title_login);
         binding.btnPrimary.setText(isRegisterMode ? R.string.action_register : R.string.action_login);
         binding.layoutNickname.setVisibility(isRegisterMode ? View.VISIBLE : View.GONE);
+        binding.btnPickUser.setVisibility(!isRegisterMode && auth.canLogin() ? View.VISIBLE : View.GONE);
 
         boolean canSwitch = auth.canLogin();
         binding.btnSwitchMode.setVisibility(canSwitch ? View.VISIBLE : View.GONE);

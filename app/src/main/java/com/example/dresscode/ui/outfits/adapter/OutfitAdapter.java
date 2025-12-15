@@ -17,6 +17,7 @@ public class OutfitAdapter extends RecyclerView.Adapter<OutfitAdapter.ViewHolder
 
     public interface Listener {
         void onToggleFavorite(OutfitCardRow item);
+        void onOpenDetail(OutfitCardRow item);
     }
 
     private final List<OutfitCardRow> data = new ArrayList<>();
@@ -47,6 +48,12 @@ public class OutfitAdapter extends RecyclerView.Adapter<OutfitAdapter.ViewHolder
         OutfitCardRow item = data.get(position);
         holder.binding.textTitle.setText(item.title);
         holder.binding.textTags.setText(item.tags);
+
+        holder.binding.getRoot().setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onOpenDetail(item);
+            }
+        });
 
         holder.binding.btnFavorite.setImageResource(
                 item.isFavorite ? android.R.drawable.btn_star_big_on : android.R.drawable.btn_star_big_off

@@ -27,6 +27,7 @@
     <string name="filter_scene">场景</string>
     <string name="filter_weather">天气</string>
     <string name="action_toggle_favorite">收藏/取消收藏</string>
+    <string name="action_go_swap">去换装</string>
     <string name="desc_outfit_image">穿搭图片</string>
     <string name="title_tips">穿搭小技巧</string>
     <string name="tips_content_sample">穿搭公式：1) 基础款 + 1 个亮点；2) 色彩不超过 3 种。\n学生党加分：1) 不盲目跟风潮流；2) 避免全身 Logo 堆积；3) 注意版型合身。</string>
@@ -61,6 +62,8 @@
     <string name="action_logout">退出登录</string>
     <string name="error_login_empty">请输入账号和密码</string>
     <string name="error_login_failed">账号或密码错误</string>
+    <string name="error_register_exists">账号已存在，请直接登录</string>
+    <string name="action_pick_registered_user">选择已注册账号</string>
     <string name="label_current_user">当前账号：</string>
 
     <string-array name="filter_gender_options">

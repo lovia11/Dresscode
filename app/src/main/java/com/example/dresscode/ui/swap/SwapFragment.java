@@ -24,6 +24,8 @@ import java.io.File;
 
 public class SwapFragment extends Fragment {
 
+    public static final String ARG_PRESELECT_OUTFIT_ID = "preselect_outfit_id";
+
     private FragmentSwapBinding binding;
     private SwapViewModel viewModel;
     private SwapFavoriteAdapter adapter;
@@ -42,6 +44,16 @@ public class SwapFragment extends Fragment {
         binding = FragmentSwapBinding.inflate(inflater, container, false);
 
         viewModel = new ViewModelProvider(this).get(SwapViewModel.class);
+
+        if (savedInstanceState == null) {
+            Bundle args = getArguments();
+            if (args != null) {
+                long preselectId = args.getLong(ARG_PRESELECT_OUTFIT_ID, -1L);
+                if (preselectId > 0) {
+                    viewModel.setSelectedOutfitId(preselectId);
+                }
+            }
+        }
 
         adapter = new SwapFavoriteAdapter(item -> viewModel.setSelectedOutfitId(item.id));
         binding.recyclerFavorites.setLayoutManager(

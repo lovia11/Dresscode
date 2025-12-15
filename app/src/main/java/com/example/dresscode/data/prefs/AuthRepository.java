@@ -9,6 +9,9 @@ import androidx.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 public class AuthRepository {
@@ -49,8 +52,21 @@ public class AuthRepository {
         return users != null && !users.isEmpty();
     }
 
+    public List<String> getAllUsernames() {
+        Set<String> users = prefs.getStringSet(KEY_USERNAMES, null);
+        if (users == null || users.isEmpty()) {
+            return Collections.emptyList();
+        }
+        ArrayList<String> list = new ArrayList<>(users);
+        Collections.sort(list);
+        return list;
+    }
+
     public void register(String username, String password, String nickname) {
         String u = safe(username);
+        if (u.isEmpty() || hasUser(u)) {
+            return;
+        }
         String hash = sha256(safe(password));
         prefs.edit()
                 .putString(userPasswordHashKey(u), hash)
@@ -79,6 +95,11 @@ public class AuthRepository {
 
     public void logout() {
         prefs.edit().putBoolean(KEY_LOGGED_IN, false).apply();
+    }
+
+    public boolean hasUser(String username) {
+        String u = safe(username);
+        return !u.isEmpty() && prefs.contains(userPasswordHashKey(u));
     }
 
     @Nullable

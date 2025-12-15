@@ -11,10 +11,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.example.dresscode.databinding.FragmentOutfitsBinding;
 import com.example.dresscode.ui.outfits.adapter.OutfitAdapter;
+import com.example.dresscode.ui.outfits.detail.OutfitDetailFragment;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public class OutfitsFragment extends Fragment {
@@ -30,7 +32,20 @@ public class OutfitsFragment extends Fragment {
         binding = FragmentOutfitsBinding.inflate(inflater, container, false);
         viewModel = new ViewModelProvider(this).get(OutfitsViewModel.class);
 
-        adapter = new OutfitAdapter(item -> viewModel.toggleFavorite(item.id, !item.isFavorite));
+        adapter = new OutfitAdapter(new OutfitAdapter.Listener() {
+            @Override
+            public void onToggleFavorite(com.example.dresscode.data.local.OutfitCardRow item) {
+                viewModel.toggleFavorite(item.id, !item.isFavorite);
+            }
+
+            @Override
+            public void onOpenDetail(com.example.dresscode.data.local.OutfitCardRow item) {
+                Bundle b = new Bundle();
+                b.putLong(OutfitDetailFragment.ARG_OUTFIT_ID, item.id);
+                NavHostFragment.findNavController(OutfitsFragment.this)
+                        .navigate(com.example.dresscode.R.id.outfitDetailFragment, b);
+            }
+        });
         binding.outfitList.setLayoutManager(new GridLayoutManager(getContext(), 2));
         binding.outfitList.setAdapter(adapter);
 

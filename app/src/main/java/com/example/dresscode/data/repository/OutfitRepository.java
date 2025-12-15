@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData;
 
 import com.example.dresscode.data.local.FavoriteEntity;
 import com.example.dresscode.data.local.OutfitCardRow;
+import com.example.dresscode.data.local.OutfitDetailRow;
 import com.example.dresscode.data.local.OutfitDao;
 import com.example.dresscode.data.local.OutfitEntity;
 import com.example.dresscode.data.local.DatabaseProvider;
@@ -41,6 +42,10 @@ public class OutfitRepository {
 
     public LiveData<List<OutfitCardRow>> observeFavoriteOutfits() {
         return outfitDao.observeFavoriteOutfits(owner);
+    }
+
+    public LiveData<OutfitDetailRow> observeOutfitDetail(long id) {
+        return outfitDao.observeOutfitDetail(owner, id);
     }
 
     public void toggleFavorite(long outfitId, boolean shouldFavorite) {

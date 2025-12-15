@@ -36,7 +36,11 @@ public class HomeRecommendAdapter extends RecyclerView.Adapter<HomeRecommendAdap
         RecommendItem item = data.get(position);
         holder.binding.textTitle.setText(item.title);
         holder.binding.textMeta.setText(item.meta);
-        if (item.imageUri != null && !item.imageUri.trim().isEmpty()) {
+        if (item.imageResId != 0) {
+            holder.binding.imageCover.setImageURI(null);
+            holder.binding.imageCover.setImageResource(item.imageResId);
+            holder.binding.imageCover.setScaleType(android.widget.ImageView.ScaleType.CENTER_INSIDE);
+        } else if (item.imageUri != null && !item.imageUri.trim().isEmpty()) {
             try {
                 holder.binding.imageCover.setImageURI(null);
                 holder.binding.imageCover.setImageURI(android.net.Uri.parse(item.imageUri));
