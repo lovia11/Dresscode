@@ -32,11 +32,11 @@
 - 设计：微信式底部 Tab，浅色主题；保持可读性与移动端适配。
 
 ## 当前状态（请每次更新）
-- 日期：
-- 已完成：
-- 进行中：
-- 待做：
-- 已知问题/风险：
+- 日期：2025-12-11
+- 已完成：单 Activity + BottomNav + Navigation 框架；首页布局含天气卡片 + 今日推荐横向列表 + 穿搭技巧卡片；穿搭页布局含搜索、筛选 Chip、列表占位；换装/我的占位页；依赖加入 Navigation/Lifecycle/Room/Retrofit/OkHttp/RecyclerView；ViewBinding 开启。
+- 进行中：暂无（待接数据/逻辑）。
+- 待做：接入天气 API + 定位；穿搭列表数据源（本地 Room 预置 + 远端可选），收藏与筛选逻辑；换装流程（上传/选图 -> 调用后端/占位生成）；登录/注册与用户偏好（性别/默认筛选）；Room 模型与 Repository；预置数据导入；测试与截图。
+- 已知问题/风险：此前 Gradle 下载有权限锁（`C:\Users\LEGION\.gradle\wrapper\dists`），如再遇需清理锁或以有权限账号构建；尚未初始化 git 仓库；当前数据为占位，需尽快填充避免后续大改。
 
 ## 运行与调试
 - 构建：./gradlew assembleDebug
@@ -46,11 +46,11 @@
 
 ## 目录与约定（如有变化请更新）
 - app/ 主工程；单 Activity（MainActivity）。
-- Fragments：Home/Weather/Swap/My 等。
-- data/local：Room DB 与 DAO。
-- data/remote：Retrofit API；repository 作为数据源入口。
-- ui/ Activity/Fragment/Adapter；viewmodel/ 各模块 VM；model/ 数据模型。
-- 资源：预置穿搭 JSON/城市列表放 assets/。
+- Fragments：Home（天气+推荐+技巧）、Outfits（搜索/筛选/列表）、Swap（换装流程占位）、Profile（我的/设置占位）。
+- data/local：Room DB 与 DAO（待建）。
+- data/remote：Retrofit API；repository 作为数据源入口（待建）。
+- ui/ Activity/Fragment/Adapter；viewmodel/ 各模块 VM（待建）；model/ 数据模型。
+- 资源：预置穿搭 JSON/城市列表放 assets/（待添加）。
 
 ## 后端/接口（示例约定）
 - 认证：POST /auth/login、/auth/register 返回 token。
@@ -86,3 +86,12 @@
 - 新开会话前请让我先阅读本文件和 README。
 - 开发结束后更新"当前状态"和"待办"，必要时追加简短 Changelog。
 - 若引入新接口/Mock/数据结构，请同步到本文件或子文档。
+
+## 大模型/换装选型备注
+- 目标：后续接入服饰试穿大模型，优先选用 aiTryOn 服务（支持人像+服装图真实试穿）。
+- 前端流程：上传/拍照人像 -> 选收藏/上传服装 -> 后端调用 aiTryOn -> 轮询/回调结果 -> 展示。
+
+## aiTryOn plan
+- Goal: integrate aiTryOn virtual try-on (person + garment) later.
+- Flow: upload/capture person -> select saved/local garment -> backend calls aiTryOn -> poll/callback -> show result.
+- Security: API key stays on backend only; document call/auth details in docs/api.md when integrating.
