@@ -23,9 +23,70 @@
     <string name="filter_season">季节</string>
     <string name="filter_scene">场景</string>
     <string name="filter_weather">天气</string>
+    <string name="action_toggle_favorite">收藏/取消收藏</string>
     <string name="desc_outfit_image">穿搭图片</string>
     <string name="title_tips">穿搭小技巧</string>
     <string name="tips_content_sample">穿搭公式：1) 基础款 + 1 个亮点；2) 色彩不超过 3 种。\n学生党加分：1) 不盲目跟风潮流；2) 避免全身 Logo 堆积；3) 注意版型合身。</string>
+
+    <string name="label_gender_setting">性别设置</string>
+    <string name="gender_unset">不设置</string>
+    <string name="gender_male">男</string>
+    <string name="gender_female">女</string>
+
+    <string name="title_swap_flow">智能换装（离线流程）</string>
+    <string name="label_pick_person_image">选择人像</string>
+    <string name="label_selected_outfit">已选穿搭：</string>
+    <string name="placeholder_swap_select_person">先选择一张人像照片</string>
+    <string name="placeholder_swap_select_outfit">再从收藏里选一套穿搭</string>
+    <string name="placeholder_swap_no_favorites">还没有收藏穿搭，去“穿搭”页点星标收藏吧。</string>
+    <string name="action_generate_swap">生成换装（占位）</string>
+    <string name="placeholder_swap_result">换装结果会展示在这里（后续接大模型/接口）。</string>
+
+    <string-array name="filter_gender_options">
+        <item>跟随设置</item>
+        <item>不限</item>
+        <item>男</item>
+        <item>女</item>
+    </string-array>
+
+    <string-array name="filter_style_options">
+        <item>不限</item>
+        <item>通勤</item>
+        <item>休闲</item>
+        <item>运动</item>
+        <item>约会</item>
+        <item>街头</item>
+        <item>机能</item>
+    </string-array>
+
+    <string-array name="filter_season_options">
+        <item>不限</item>
+        <item>春</item>
+        <item>夏</item>
+        <item>秋</item>
+        <item>冬</item>
+        <item>春夏</item>
+        <item>春秋</item>
+        <item>秋冬</item>
+    </string-array>
+
+    <string-array name="filter_scene_options">
+        <item>不限</item>
+        <item>通勤</item>
+        <item>校园</item>
+        <item>约会</item>
+        <item>运动</item>
+        <item>出街</item>
+    </string-array>
+
+    <string-array name="filter_weather_options">
+        <item>不限</item>
+        <item>晴</item>
+        <item>多云</item>
+        <item>雨</item>
+        <item>冷</item>
+        <item>热</item>
+    </string-array>
 
     <string name="placeholder_closet_empty">衣橱还是空的。\n点击右下角 + 添加你的衣服吧。</string>
     <string name="action_add_clothing">添加衣服</string>

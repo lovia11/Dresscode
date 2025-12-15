@@ -5,12 +5,15 @@ import androidx.room.RoomDatabase;
 
 @Database(
         entities = {
-                ClosetItemEntity.class
+                ClosetItemEntity.class,
+                OutfitEntity.class,
+                FavoriteEntity.class
         },
-        version = 1,
+        version = 2,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
     public abstract ClosetDao closetDao();
-}
 
+    public abstract OutfitDao outfitDao();
+}
