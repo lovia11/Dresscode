@@ -13,12 +13,27 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/image_clothing"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="140dp"
-            android:contentDescription="@string/action_add_clothing"
-            android:scaleType="centerCrop" />
+            android:layout_height="140dp">
+
+            <ImageView
+                android:id="@+id/image_clothing"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="@string/action_add_clothing"
+                android:scaleType="centerCrop" />
+
+            <ImageButton
+                android:id="@+id/btn_favorite"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="end|top"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/action_toggle_favorite"
+                android:padding="8dp"
+                android:src="@android:drawable/btn_star_big_off" />
+        </FrameLayout>
 
         <TextView
             android:id="@+id/text_name"

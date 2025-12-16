@@ -27,6 +27,10 @@ public class ClosetRepository {
         return closetDao.observeAll(owner);
     }
 
+    public LiveData<List<ClosetItemEntity>> observeFavorites() {
+        return closetDao.observeFavorites(owner);
+    }
+
     public void add(ClosetItemEntity item) {
         ioExecutor.execute(() -> closetDao.insert(item));
     }
@@ -39,6 +43,23 @@ public class ClosetRepository {
             }
             closetDao.deleteById(id, owner);
         });
+    }
+
+    public void update(long id, String name, String category, String color, String season, String style, String scene) {
+        ioExecutor.execute(() -> closetDao.updateById(
+                id,
+                owner,
+                safe(name),
+                safe(category),
+                safe(color),
+                safe(season),
+                safe(style),
+                safe(scene)
+        ));
+    }
+
+    public void setFavorite(long id, boolean favorite) {
+        ioExecutor.execute(() -> closetDao.setFavorite(id, owner, favorite));
     }
 
     private void deleteLocalFileIfPossible(String uri) {
@@ -56,5 +77,9 @@ public class ClosetRepository {
             }
         } catch (Exception ignored) {
         }
+    }
+
+    private String safe(String s) {
+        return s == null ? "" : s.trim();
     }
 }

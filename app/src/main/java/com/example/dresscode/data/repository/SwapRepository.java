@@ -28,10 +28,14 @@ public class SwapRepository {
         return dao.observeHistory(owner);
     }
 
-    public void addJob(long outfitId, String personImageUri, String resultImageUri, String status) {
+    public void addJob(String sourceType, long sourceRefId, String sourceTitle, String sourceImageUri, String personImageUri, String resultImageUri, String status) {
         ioExecutor.execute(() -> dao.insert(new SwapJobEntity(
                 owner,
-                outfitId,
+                "OUTFIT".equals(sourceType) ? sourceRefId : 0L,
+                sourceType == null || sourceType.trim().isEmpty() ? "OUTFIT" : sourceType.trim(),
+                sourceRefId,
+                sourceTitle == null ? "" : sourceTitle,
+                sourceImageUri == null ? "" : sourceImageUri,
                 personImageUri,
                 resultImageUri,
                 status,

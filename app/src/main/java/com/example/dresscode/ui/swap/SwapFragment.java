@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.dresscode.databinding.FragmentSwapBinding;
+import com.example.dresscode.ui.swap.adapter.SwapClosetFavoriteAdapter;
 import com.example.dresscode.ui.swap.adapter.SwapFavoriteAdapter;
 import com.example.dresscode.ui.swap.adapter.SwapHistoryAdapter;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -29,6 +30,7 @@ public class SwapFragment extends Fragment {
     private FragmentSwapBinding binding;
     private SwapViewModel viewModel;
     private SwapFavoriteAdapter adapter;
+    private SwapClosetFavoriteAdapter closetAdapter;
     private SwapHistoryAdapter historyAdapter;
 
     private ActivityResultLauncher<Uri> takePictureLauncher;
@@ -50,20 +52,26 @@ public class SwapFragment extends Fragment {
             if (args != null) {
                 long preselectId = args.getLong(ARG_PRESELECT_OUTFIT_ID, -1L);
                 if (preselectId > 0) {
-                    viewModel.setSelectedOutfitId(preselectId);
+                    viewModel.selectOutfit(preselectId);
                 }
             }
         }
 
-        adapter = new SwapFavoriteAdapter(item -> viewModel.setSelectedOutfitId(item.id));
+        adapter = new SwapFavoriteAdapter(item -> viewModel.selectOutfit(item.id));
         binding.recyclerFavorites.setLayoutManager(
                 new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false)
         );
         binding.recyclerFavorites.setAdapter(adapter);
 
+        closetAdapter = new SwapClosetFavoriteAdapter(item -> viewModel.selectClosetItem(item.id));
+        binding.recyclerFavoriteCloset.setLayoutManager(
+                new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false)
+        );
+        binding.recyclerFavoriteCloset.setAdapter(closetAdapter);
+
         historyAdapter = new SwapHistoryAdapter(row -> new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(com.example.dresscode.R.string.action_delete)
-                .setMessage(getString(com.example.dresscode.R.string.confirm_delete_history, row.outfitTitle))
+                .setMessage(getString(com.example.dresscode.R.string.confirm_delete_history, row.sourceTitle))
                 .setNegativeButton(android.R.string.cancel, null)
                 .setPositiveButton(com.example.dresscode.R.string.action_delete, (d, w) -> viewModel.deleteHistory(row.id))
                 .show());
@@ -105,9 +113,7 @@ public class SwapFragment extends Fragment {
                         .show();
                 return;
             }
-            binding.imageResult.setImageURI(null);
-            binding.imageResult.setImageURI(Uri.parse(personUri));
-            binding.textResultHint.setText(com.example.dresscode.R.string.placeholder_swap_result);
+            binding.textResultHint.setText("生成中...");
             viewModel.generateSwap();
         });
 
@@ -118,14 +124,24 @@ public class SwapFragment extends Fragment {
             binding.recyclerFavorites.setVisibility(empty ? View.GONE : View.VISIBLE);
         });
 
-        viewModel.getSelectedOutfit().observe(getViewLifecycleOwner(), selected -> {
-            if (selected == null) {
-                binding.textSelectedOutfit.setText(getString(com.example.dresscode.R.string.label_selected_outfit));
-            } else {
-                binding.textSelectedOutfit.setText(getString(com.example.dresscode.R.string.label_selected_outfit) + selected.title);
-            }
-            adapter.submitList(viewModel.getFavoriteOutfits().getValue(), viewModel.getSelectedOutfitId().getValue());
+        viewModel.getFavoriteClosetItems().observe(getViewLifecycleOwner(), items -> {
+            closetAdapter.submitList(items, viewModel.getSelectedClosetItemId().getValue());
+            boolean empty = items == null || items.isEmpty();
+            binding.textNoFavoriteCloset.setVisibility(empty ? View.VISIBLE : View.GONE);
+            binding.recyclerFavoriteCloset.setVisibility(empty ? View.GONE : View.VISIBLE);
         });
+
+        viewModel.getSelectedLabel().observe(getViewLifecycleOwner(), label ->
+                binding.textSelectedOutfit.setText(getString(com.example.dresscode.R.string.label_selected_outfit) + (label == null ? "" : label))
+        );
+
+        viewModel.getSelectedOutfitId().observe(getViewLifecycleOwner(), id ->
+                adapter.submitList(viewModel.getFavoriteOutfits().getValue(), id)
+        );
+
+        viewModel.getSelectedClosetItemId().observe(getViewLifecycleOwner(), id ->
+                closetAdapter.submitList(viewModel.getFavoriteClosetItems().getValue(), id)
+        );
 
         viewModel.getPersonImageUri().observe(getViewLifecycleOwner(), uri -> {
             if (uri == null || uri.trim().isEmpty()) {
@@ -138,7 +154,60 @@ public class SwapFragment extends Fragment {
             }
         });
 
-        viewModel.getCanGenerate().observe(getViewLifecycleOwner(), can -> binding.btnGenerate.setEnabled(Boolean.TRUE.equals(can)));
+        binding.imagePerson.setOnClickListener(v -> {
+            String uri = viewModel.getPersonImageUri().getValue();
+            if (uri == null || uri.trim().isEmpty()) {
+                return;
+            }
+            showImagePreview("人像预览", uri);
+        });
+
+        viewModel.getCanGenerate().observe(getViewLifecycleOwner(), can -> {
+            boolean generating = Boolean.TRUE.equals(viewModel.getGenerating().getValue());
+            binding.btnGenerate.setEnabled(!generating && Boolean.TRUE.equals(can));
+        });
+
+        viewModel.getGenerating().observe(getViewLifecycleOwner(), g -> {
+            boolean generating = Boolean.TRUE.equals(g);
+            binding.btnGenerate.setEnabled(!generating && Boolean.TRUE.equals(viewModel.getCanGenerate().getValue()));
+            if (generating) {
+                binding.textResultHint.setText("生成中...");
+            }
+        });
+
+        viewModel.getGenerateError().observe(getViewLifecycleOwner(), err -> {
+            if (err == null || err.trim().isEmpty()) {
+                return;
+            }
+            if (!isAdded()) {
+                return;
+            }
+            new MaterialAlertDialogBuilder(requireContext())
+                    .setMessage("换装失败：" + err)
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show();
+        });
+
+        viewModel.getResultImageUri().observe(getViewLifecycleOwner(), uri -> {
+            if (uri == null || uri.trim().isEmpty()) {
+                return;
+            }
+            try {
+                binding.imageResult.setImageURI(null);
+                binding.imageResult.setImageURI(Uri.parse(uri));
+                binding.textResultHint.setText(com.example.dresscode.R.string.placeholder_swap_result);
+            } catch (Exception e) {
+                binding.imageResult.setImageURI(null);
+            }
+        });
+
+        binding.imageResult.setOnClickListener(v -> {
+            String uri = viewModel.getResultImageUri().getValue();
+            if (uri == null || uri.trim().isEmpty()) {
+                return;
+            }
+            showImagePreview("换装结果预览", uri);
+        });
 
         viewModel.getHistory().observe(getViewLifecycleOwner(), rows -> historyAdapter.submitList(rows));
 
@@ -183,6 +252,27 @@ public class SwapFragment extends Fragment {
         }
         pendingImageFile = null;
         pendingImageUri = null;
+    }
+
+    private void showImagePreview(String title, String uriString) {
+        if (!isAdded()) {
+            return;
+        }
+        android.widget.ImageView imageView = new android.widget.ImageView(requireContext());
+        imageView.setAdjustViewBounds(true);
+        imageView.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+        int pad = Math.round(getResources().getDisplayMetrics().density * 12);
+        imageView.setPadding(pad, pad, pad, pad);
+        try {
+            imageView.setImageURI(Uri.parse(uriString));
+        } catch (Exception ignored) {
+            imageView.setImageURI(null);
+        }
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(title)
+                .setView(imageView)
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
     }
 
     @Override

@@ -101,6 +101,10 @@ public class OutfitRepository {
                         safe(s.weather),
                         safe(s.colorHex),
                         coverResId,
+                        safe(s.tagSource).isEmpty() ? "SEED" : safe(s.tagSource),
+                        safe(s.tagModel),
+                        safe(s.aiTagsJson),
+                        s.tagUpdatedAt <= 0 ? now : s.tagUpdatedAt,
                         now - delta
                 ));
                 delta += 1000L;
@@ -124,6 +128,10 @@ public class OutfitRepository {
                 "晴",
                 "#E3F2FD",
                 com.example.dresscode.R.drawable.ic_outfit_top,
+                "SEED",
+                "",
+                "",
+                0L,
                 now - 1000L
         ));
         seed.add(new OutfitEntity(
@@ -136,6 +144,10 @@ public class OutfitRepository {
                 "晴",
                 "#FCE4EC",
                 com.example.dresscode.R.drawable.ic_outfit_dress,
+                "SEED",
+                "",
+                "",
+                0L,
                 now - 2000L
         ));
         return seed;
@@ -155,5 +167,9 @@ public class OutfitRepository {
         String weather;
         String colorHex;
         String cover;
+        String tagSource;
+        String tagModel;
+        String aiTagsJson;
+        long tagUpdatedAt;
     }
 }

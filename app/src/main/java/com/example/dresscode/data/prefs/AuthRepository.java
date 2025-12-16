@@ -195,7 +195,7 @@ public class AuthRepository {
             }
             return sb.toString();
         } catch (Exception e) {
-            return raw;
+            return Integer.toHexString(raw == null ? 0 : raw.hashCode());
         }
     }
 }

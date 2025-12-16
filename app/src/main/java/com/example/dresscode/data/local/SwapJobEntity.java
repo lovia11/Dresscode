@@ -15,6 +15,17 @@ public class SwapJobEntity {
     public long outfitId;
 
     @NonNull
+    public String sourceType;
+
+    public long sourceRefId;
+
+    @NonNull
+    public String sourceTitle;
+
+    @NonNull
+    public String sourceImageUri;
+
+    @NonNull
     public String personImageUri;
 
     @NonNull
@@ -28,6 +39,10 @@ public class SwapJobEntity {
     public SwapJobEntity(
             @NonNull String owner,
             long outfitId,
+            @NonNull String sourceType,
+            long sourceRefId,
+            @NonNull String sourceTitle,
+            @NonNull String sourceImageUri,
             @NonNull String personImageUri,
             @NonNull String resultImageUri,
             @NonNull String status,
@@ -35,6 +50,10 @@ public class SwapJobEntity {
     ) {
         this.owner = owner;
         this.outfitId = outfitId;
+        this.sourceType = sourceType;
+        this.sourceRefId = sourceRefId;
+        this.sourceTitle = sourceTitle;
+        this.sourceImageUri = sourceImageUri;
         this.personImageUri = personImageUri;
         this.resultImageUri = resultImageUri;
         this.status = status;

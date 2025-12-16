@@ -89,4 +89,3 @@ public class OutfitDetailFragment extends Fragment {
         binding = null;
     }
 }
-

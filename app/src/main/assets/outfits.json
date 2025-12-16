@@ -8,7 +8,11 @@
     "scene": "通勤",
     "weather": "晴",
     "colorHex": "#E3F2FD",
-    "cover": "ic_outfit_top"
+    "cover": "ic_outfit_top",
+    "tagSource": "SEED",
+    "tagModel": "",
+    "aiTagsJson": "",
+    "tagUpdatedAt": 0
   },
   {
     "title": "运动速干套装",
@@ -19,7 +23,11 @@
     "scene": "运动",
     "weather": "热",
     "colorHex": "#E8F5E9",
-    "cover": "ic_outfit_shoes"
+    "cover": "ic_outfit_shoes",
+    "tagSource": "SEED",
+    "tagModel": "",
+    "aiTagsJson": "",
+    "tagUpdatedAt": 0
   },
   {
     "title": "法式连衣裙",
@@ -30,7 +38,11 @@
     "scene": "约会",
     "weather": "晴",
     "colorHex": "#FCE4EC",
-    "cover": "ic_outfit_dress"
+    "cover": "ic_outfit_dress",
+    "tagSource": "SEED",
+    "tagModel": "",
+    "aiTagsJson": "",
+    "tagUpdatedAt": 0
   },
   {
     "title": "卫衣 + 牛仔裤",
@@ -41,7 +53,11 @@
     "scene": "校园",
     "weather": "多云",
     "colorHex": "#FFF3E0",
-    "cover": "ic_outfit_pants"
+    "cover": "ic_outfit_pants",
+    "tagSource": "SEED",
+    "tagModel": "",
+    "aiTagsJson": "",
+    "tagUpdatedAt": 0
   },
   {
     "title": "风衣 + 针织衫",
@@ -52,7 +68,11 @@
     "scene": "通勤",
     "weather": "冷",
     "colorHex": "#EDE7F6",
-    "cover": "ic_outfit_outer"
+    "cover": "ic_outfit_outer",
+    "tagSource": "SEED",
+    "tagModel": "",
+    "aiTagsJson": "",
+    "tagUpdatedAt": 0
   },
   {
     "title": "雨天防水外套",
@@ -63,7 +83,10 @@
     "scene": "通勤",
     "weather": "雨",
     "colorHex": "#E1F5FE",
-    "cover": "ic_outfit_outer"
+    "cover": "ic_outfit_outer",
+    "tagSource": "SEED",
+    "tagModel": "",
+    "aiTagsJson": "",
+    "tagUpdatedAt": 0
   }
 ]
-

@@ -12,6 +12,9 @@ public interface ClosetDao {
     @Query("SELECT * FROM closet_items WHERE owner = :owner ORDER BY createdAt DESC")
     LiveData<List<ClosetItemEntity>> observeAll(String owner);
 
+    @Query("SELECT * FROM closet_items WHERE owner = :owner AND isFavorite = 1 ORDER BY createdAt DESC")
+    LiveData<List<ClosetItemEntity>> observeFavorites(String owner);
+
     @Insert
     long insert(ClosetItemEntity item);
 
@@ -20,6 +23,30 @@ public interface ClosetDao {
 
     @Query("DELETE FROM closet_items WHERE id = :id AND owner = :owner")
     int deleteById(long id, String owner);
+
+    @Query(
+            "UPDATE closet_items SET " +
+                    "name = :name, " +
+                    "category = :category, " +
+                    "color = :color, " +
+                    "season = :season, " +
+                    "style = :style, " +
+                    "scene = :scene " +
+                    "WHERE id = :id AND owner = :owner"
+    )
+    int updateById(
+            long id,
+            String owner,
+            String name,
+            String category,
+            String color,
+            String season,
+            String style,
+            String scene
+    );
+
+    @Query("UPDATE closet_items SET isFavorite = :favorite WHERE id = :id AND owner = :owner")
+    int setFavorite(long id, String owner, boolean favorite);
 
     @Query("UPDATE closet_items SET owner = :owner WHERE owner = ''")
     int claimLegacy(String owner);

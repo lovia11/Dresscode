@@ -30,6 +30,11 @@ public class ClosetItemEntity {
     @NonNull
     public String style;
 
+    @NonNull
+    public String scene;
+
+    public boolean isFavorite;
+
     public long createdAt;
 
     public ClosetItemEntity(
@@ -40,6 +45,8 @@ public class ClosetItemEntity {
             @NonNull String color,
             @NonNull String season,
             @NonNull String style,
+            @NonNull String scene,
+            boolean isFavorite,
             long createdAt
     ) {
         this.owner = owner;
@@ -49,6 +56,8 @@ public class ClosetItemEntity {
         this.color = color;
         this.season = season;
         this.style = style;
+        this.scene = scene;
+        this.isFavorite = isFavorite;
         this.createdAt = createdAt;
     }
 }

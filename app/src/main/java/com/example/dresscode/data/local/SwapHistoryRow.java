@@ -6,9 +6,13 @@ public class SwapHistoryRow {
     public long id;
     @NonNull
     public String owner;
-    public long outfitId;
     @NonNull
-    public String outfitTitle;
+    public String sourceType;
+    public long sourceRefId;
+    @NonNull
+    public String sourceTitle;
+    @NonNull
+    public String sourceImageUri;
     @NonNull
     public String personImageUri;
     @NonNull

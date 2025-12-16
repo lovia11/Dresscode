@@ -32,11 +32,22 @@
 - 设计：微信式底部 Tab，浅色主题；保持可读性与移动端适配。
 
 ## 当前状态（请每次更新）
-- 日期：2025-12-11
-- 已完成：单 Activity + BottomNav + Navigation 框架；首页布局含天气卡片 + 今日推荐横向列表 + 穿搭技巧卡片；穿搭页布局含搜索、筛选 Chip、列表占位；换装/我的占位页；依赖加入 Navigation/Lifecycle/Room/Retrofit/OkHttp/RecyclerView；ViewBinding 开启。
-- 进行中：暂无（待接数据/逻辑）。
-- 待做：接入天气 API + 定位；穿搭列表数据源（本地 Room 预置 + 远端可选），收藏与筛选逻辑；换装流程（上传/选图 -> 调用后端/占位生成）；登录/注册与用户偏好（性别/默认筛选）；Room 模型与 Repository；预置数据导入；测试与截图。
-- 已知问题/风险：此前 Gradle 下载有权限锁（`C:\Users\LEGION\.gradle\wrapper\dists`），如再遇需清理锁或以有权限账号构建；尚未初始化 git 仓库；当前数据为占位，需尽快填充避免后续大改。
+- 日期：2025-12-15
+- 已完成：登录/注册（本地持久化）；衣橱模块（拍照/选图新增、列表展示、删除）；穿搭展示（列表/筛选/搜索、收藏）；收藏星标区分未收藏（灰/透明）与已收藏（蓝）；换装流程（选人像+选收藏穿搭，占位生成结果）；换装历史（本地保存、可删除）；“我的”页昵称/头像等基础信息；本地数据均按用户隔离。
+- 已完成（天气）：切换到高德 Web 服务 API（逆地理编码 + 实况天气）；城市下拉可切换；点击“定位当前城市”会请求定位并刷新天气；缓存上次天气快照。
+- 进行中：定位体验（模拟器/热点环境下定位不稳定时，需要手动设置模拟器 Location，或在真机开启高精度定位）；天气 UI 的“定位成功后一定切换到杭州/当前城市”依赖设备真实位置。
+- 已完成（后端基础）：FastAPI AI 网关支持 DashScope（aitryon + qwen-vl-plus）；新增“衣橱入库”API，并支持用 `DATABASE_URL` 写入 SQLite/MySQL（用于部署公网数据库与验收）。
+- 待做：把后端部署到公网（域名/HTTPS），配置 MySQL（RDS/自建）+ 图片公网访问（/files 或 OSS），让 DashScope 可拉取图片；在 App 里把“新增衣橱/打标签/今日推荐”逐步切到后端；更完善的数据导入与测试截图；git 多次 commit 记录整理。
+- 已知问题/风险：Gradle 有时会因 `C:\Users\LEGION\.gradle\wrapper\dists` 锁/权限导致构建失败；个别环境网络/DNS 会导致第三方天气域名解析失败（已优先采用国内高德接口）；编辑文件时需保持 UTF-8（避免 BOM/乱码）。
+
+### Changelog（简要）
+- 2025-12-15：天气改用高德（adcode 查询），修复“天气获取失败：OK/无数据”误报；修复定位回调导致的 `Fragment not attached` 崩溃；定位失败时使用当前下拉城市作为兜底。
+- 2025-12-16：衣橱新增“场景”标签并支持编辑；Room 升级到 v6 并提供 5→6 迁移（`closet_items.scene`）。
+- 2025-12-16：穿搭数据结构增加 AI 打标元数据字段（`tagSource/tagModel/aiTagsJson/tagUpdatedAt`），并提供 `tools/tag_outfits.py` 用于打包前预打标（方案A）。
+- 2025-12-16：衣橱支持收藏衣物（星标）；换装页可选择“收藏穿搭”或“收藏衣橱衣物”作为换装素材；Room 升级到 v8 并提供 7→8 迁移（`closet_items.isFavorite`、`swap_jobs.source*`）。
+- 2025-12-16：新增本地后端 `backend/`（FastAPI）提供 `/api/tryon`；Android 换装页优先对“收藏衣橱衣物”调用后端生成结果并写入历史。
+- 2025-12-16：后端 try-on 切换为可选 DashScope `aitryon`（远程异步任务轮询）；新增 qwen-vl-plus 预留接口（`/api/vl/tag`、`/api/vl/recommend`）。
+- 2025-12-16：后端新增数据库持久化（SQLite/MySQL），提供衣橱上传/查询/删除/打标接口（满足“图片+标签入库并可公网验收”的目标）。
 
 ## 运行与调试
 - 构建：./gradlew assembleDebug
@@ -95,3 +106,5 @@
 - Goal: integrate aiTryOn virtual try-on (person + garment) later.
 - Flow: upload/capture person -> select saved/local garment -> backend calls aiTryOn -> poll/callback -> show result.
 - Security: API key stays on backend only; document call/auth details in docs/api.md when integrating.
+
+codex resume 019b20c3-1ab3-7080-b0e1-c7e9bc8ca74a

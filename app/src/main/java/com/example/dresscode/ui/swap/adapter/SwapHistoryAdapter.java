@@ -48,7 +48,7 @@ public class SwapHistoryAdapter extends RecyclerView.Adapter<SwapHistoryAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         SwapHistoryRow row = data.get(position);
-        holder.binding.textTitle.setText(row.outfitTitle + " · " + row.status);
+        holder.binding.textTitle.setText(row.sourceTitle + " · " + row.status);
         holder.binding.textTime.setText(formatter.format(new Date(row.createdAt)));
         holder.binding.getRoot().setOnLongClickListener(v -> {
             if (listener != null) {

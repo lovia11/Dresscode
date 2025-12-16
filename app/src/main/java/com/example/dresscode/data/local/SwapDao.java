@@ -13,9 +13,9 @@ public interface SwapDao {
     long insert(SwapJobEntity job);
 
     @Query(
-            "SELECT j.id, j.owner, j.outfitId, o.title AS outfitTitle, j.personImageUri, j.resultImageUri, j.status, j.createdAt " +
+            "SELECT j.id, j.owner, j.sourceType, j.sourceRefId, j.sourceTitle, j.sourceImageUri, " +
+                    "j.personImageUri, j.resultImageUri, j.status, j.createdAt " +
                     "FROM swap_jobs j " +
-                    "INNER JOIN outfits o ON o.id = j.outfitId " +
                     "WHERE j.owner = :owner " +
                     "ORDER BY j.createdAt DESC"
     )

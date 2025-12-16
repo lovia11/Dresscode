@@ -27,6 +27,17 @@ public class OutfitEntity {
     public String colorHex;
     public int coverResId;
 
+    @NonNull
+    public String tagSource;
+
+    @NonNull
+    public String tagModel;
+
+    @NonNull
+    public String aiTagsJson;
+
+    public long tagUpdatedAt;
+
     public long createdAt;
 
     public OutfitEntity(
@@ -39,6 +50,10 @@ public class OutfitEntity {
             @NonNull String weather,
             @NonNull String colorHex,
             int coverResId,
+            @NonNull String tagSource,
+            @NonNull String tagModel,
+            @NonNull String aiTagsJson,
+            long tagUpdatedAt,
             long createdAt
     ) {
         this.title = title;
@@ -50,6 +65,10 @@ public class OutfitEntity {
         this.weather = weather;
         this.colorHex = colorHex;
         this.coverResId = coverResId;
+        this.tagSource = tagSource;
+        this.tagModel = tagModel;
+        this.aiTagsJson = aiTagsJson;
+        this.tagUpdatedAt = tagUpdatedAt;
         this.createdAt = createdAt;
     }
 }

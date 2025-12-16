@@ -39,10 +39,12 @@
 
     <string name="title_swap_flow">智能换装（离线流程）</string>
     <string name="label_pick_person_image">选择人像</string>
-    <string name="label_selected_outfit">已选穿搭：</string>
+    <string name="label_selected_outfit">已选素材：</string>
     <string name="placeholder_swap_select_person">先选择一张人像照片</string>
     <string name="placeholder_swap_select_outfit">再从收藏里选一套穿搭</string>
     <string name="placeholder_swap_no_favorites">还没有收藏穿搭，去“穿搭”页点星标收藏吧。</string>
+    <string name="label_pick_closet_favorite">或从收藏衣橱选择衣服</string>
+    <string name="placeholder_swap_no_favorite_closet">还没有收藏衣物，去“衣橱”页点星标收藏吧。</string>
     <string name="action_generate_swap">生成换装（占位）</string>
     <string name="placeholder_swap_result">换装结果会展示在这里（后续接大模型/接口）。</string>
     <string name="title_swap_history">历史记录</string>
@@ -126,13 +128,16 @@
     <string name="action_save">保存</string>
     <string name="error_image_import_failed">图片导入失败，请重试。</string>
     <string name="action_delete">删除</string>
+    <string name="action_edit">编辑</string>
     <string name="confirm_delete_clothing">确定删除“%1$s”吗？</string>
     <string name="confirm_delete_history">确定删除这条记录（%1$s）吗？</string>
+    <string name="title_edit_clothing">编辑衣服</string>
     <string name="label_clothing_name">名称</string>
     <string name="label_clothing_category">类别</string>
     <string name="label_clothing_color">颜色（可选）</string>
     <string name="label_clothing_season">季节（可选）</string>
     <string name="label_clothing_style">风格（可选）</string>
+    <string name="label_clothing_scene">场景（可选）</string>
     <string name="default_unknown">未知</string>
     <string name="default_category">未分类</string>
     <string name="default_clothing_name">%1$s</string>

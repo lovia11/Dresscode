@@ -50,12 +50,17 @@ public class ClosetFragment extends Fragment {
 
         viewModel = new ViewModelProvider(this).get(ClosetViewModel.class);
         owner = new AuthRepository(requireContext()).getCurrentUsernameOrEmpty();
-        adapter = new ClosetAdapter(item -> new MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.action_delete)
-                .setMessage(getString(R.string.confirm_delete_clothing, item.name))
-                .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton(R.string.action_delete, (d, w) -> viewModel.delete(item.id))
-                .show());
+        adapter = new ClosetAdapter(new ClosetAdapter.Listener() {
+            @Override
+            public void onLongPress(ClosetItemEntity item) {
+                showItemActions(item);
+            }
+
+            @Override
+            public void onToggleFavorite(ClosetItemEntity item) {
+                viewModel.setFavorite(item.id, !item.isFavorite);
+            }
+        });
 
         binding.recyclerCloset.setLayoutManager(new GridLayoutManager(getContext(), 2));
         binding.recyclerCloset.setAdapter(adapter);
@@ -163,6 +168,7 @@ public class ClosetFragment extends Fragment {
                     String color = valueOrEmpty(dialogBinding.inputColor.getText() == null ? null : dialogBinding.inputColor.getText().toString());
                     String season = valueOrEmpty(dialogBinding.inputSeason.getText() == null ? null : dialogBinding.inputSeason.getText().toString());
                     String style = valueOrEmpty(dialogBinding.inputStyle.getText() == null ? null : dialogBinding.inputStyle.getText().toString());
+                    String scene = valueOrEmpty(dialogBinding.inputScene.getText() == null ? null : dialogBinding.inputScene.getText().toString());
 
                     if (name.isEmpty()) {
                         name = getString(R.string.default_clothing_name, category.isEmpty() ? getString(R.string.default_category) : category);
@@ -175,6 +181,9 @@ public class ClosetFragment extends Fragment {
                     }
                     if (style.isEmpty()) {
                         style = getString(R.string.default_unknown);
+                    }
+                    if (scene.isEmpty()) {
+                        scene = getString(R.string.default_unknown);
                     }
                     if (category.isEmpty()) {
                         category = getString(R.string.default_category);
@@ -189,6 +198,8 @@ public class ClosetFragment extends Fragment {
                             color,
                             season,
                             style,
+                            scene,
+                            false,
                             System.currentTimeMillis()
                     );
                     viewModel.add(item);
@@ -196,6 +207,86 @@ public class ClosetFragment extends Fragment {
                         pendingImageFile = null;
                         pendingImageUri = null;
                     }
+                })
+                .show();
+    }
+
+    private void showItemActions(ClosetItemEntity item) {
+        String[] actions = new String[]{
+                getString(R.string.action_edit),
+                getString(R.string.action_delete)
+        };
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(item.name)
+                .setItems(actions, (d, which) -> {
+                    if (which == 0) {
+                        showEditItemDialog(item);
+                    } else if (which == 1) {
+                        new MaterialAlertDialogBuilder(requireContext())
+                                .setTitle(R.string.action_delete)
+                                .setMessage(getString(R.string.confirm_delete_clothing, item.name))
+                                .setNegativeButton(android.R.string.cancel, null)
+                                .setPositiveButton(R.string.action_delete, (dd, ww) -> viewModel.delete(item.id))
+                                .show();
+                    }
+                })
+                .show();
+    }
+
+    private void showEditItemDialog(ClosetItemEntity item) {
+        DialogAddClothingBinding dialogBinding = DialogAddClothingBinding.inflate(getLayoutInflater());
+        try {
+            dialogBinding.imagePreview.setImageURI(Uri.parse(item.imageUri));
+        } catch (Exception e) {
+            dialogBinding.imagePreview.setImageURI(null);
+        }
+
+        dialogBinding.inputName.setText(item.name);
+
+        String[] categories = getResources().getStringArray(R.array.closet_categories);
+        dialogBinding.inputCategory.setAdapter(new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_list_item_1,
+                categories
+        ));
+        dialogBinding.inputCategory.setText(item.category, false);
+        dialogBinding.inputColor.setText(item.color);
+        dialogBinding.inputSeason.setText(item.season);
+        dialogBinding.inputStyle.setText(item.style);
+        dialogBinding.inputScene.setText(item.scene);
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.title_edit_clothing)
+                .setView(dialogBinding.getRoot())
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.action_save, (d, w) -> {
+                    String name = valueOrEmpty(dialogBinding.inputName.getText() == null ? null : dialogBinding.inputName.getText().toString());
+                    String category = valueOrEmpty(dialogBinding.inputCategory.getText() == null ? null : dialogBinding.inputCategory.getText().toString());
+                    String color = valueOrEmpty(dialogBinding.inputColor.getText() == null ? null : dialogBinding.inputColor.getText().toString());
+                    String season = valueOrEmpty(dialogBinding.inputSeason.getText() == null ? null : dialogBinding.inputSeason.getText().toString());
+                    String style = valueOrEmpty(dialogBinding.inputStyle.getText() == null ? null : dialogBinding.inputStyle.getText().toString());
+                    String scene = valueOrEmpty(dialogBinding.inputScene.getText() == null ? null : dialogBinding.inputScene.getText().toString());
+
+                    if (name.isEmpty()) {
+                        name = getString(R.string.default_clothing_name, category.isEmpty() ? getString(R.string.default_category) : category);
+                    }
+                    if (color.isEmpty()) {
+                        color = getString(R.string.default_unknown);
+                    }
+                    if (season.isEmpty()) {
+                        season = getString(R.string.default_unknown);
+                    }
+                    if (style.isEmpty()) {
+                        style = getString(R.string.default_unknown);
+                    }
+                    if (scene.isEmpty()) {
+                        scene = getString(R.string.default_unknown);
+                    }
+                    if (category.isEmpty()) {
+                        category = getString(R.string.default_category);
+                    }
+
+                    viewModel.update(item.id, name, category, color, season, style, scene);
                 })
                 .show();
     }

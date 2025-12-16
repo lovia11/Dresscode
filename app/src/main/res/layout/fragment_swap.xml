@@ -41,10 +41,12 @@
                 <ImageView
                     android:id="@+id/image_person"
                     android:layout_width="match_parent"
-                    android:layout_height="220dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
+                    android:adjustViewBounds="true"
                     android:background="#EEEEEE"
-                    android:scaleType="centerCrop" />
+                    android:maxHeight="420dp"
+                    android:scaleType="fitCenter" />
 
                 <TextView
                     android:id="@+id/text_person_hint"
@@ -103,6 +105,29 @@
             tools:listitem="@layout/item_swap_favorite_outfit" />
 
         <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/label_pick_closet_favorite"
+            android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+        <TextView
+            android:id="@+id/text_no_favorite_closet"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/placeholder_swap_no_favorite_closet"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_favorite_closet"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginTop="8dp"
+            tools:listitem="@layout/item_swap_favorite_closet" />
+
+        <TextView
             android:id="@+id/text_selected_outfit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -134,9 +159,11 @@
                 <ImageView
                     android:id="@+id/image_result"
                     android:layout_width="match_parent"
-                    android:layout_height="220dp"
+                    android:layout_height="wrap_content"
+                    android:adjustViewBounds="true"
                     android:background="#EEEEEE"
-                    android:scaleType="centerCrop" />
+                    android:maxHeight="520dp"
+                    android:scaleType="fitCenter" />
 
                 <TextView
                     android:id="@+id/text_result_hint"
