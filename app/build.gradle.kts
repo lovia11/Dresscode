@@ -16,7 +16,7 @@ android {
     }
     val qweatherKey: String = localProperties.getProperty("QWEATHER_KEY", "")
     val amapKey: String = localProperties.getProperty("AMAP_KEY", "")
-    val backendBaseUrlRaw: String = localProperties.getProperty("BACKEND_BASE_URL", "http://10.0.2.2:8000/")
+    val backendBaseUrlRaw: String = localProperties.getProperty("BACKEND_BASE_URL", "http://121.40.80.52/")
     val backendBaseUrl: String = if (backendBaseUrlRaw.trim().endsWith("/")) backendBaseUrlRaw.trim() else backendBaseUrlRaw.trim() + "/"
 
     defaultConfig {

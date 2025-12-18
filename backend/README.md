@@ -74,6 +74,15 @@ set PUBLIC_BASE_URL=https://你的公网域名或IP
 
 后端会把上传的图片临时保存到 `backend_data/uploads/`，并通过 `GET /files/{name}` 对外提供访问，再把这些 URL 传给 DashScope。
 
+### 6. DashScope 超时参数（避免 60s 超时）
+
+部分网络环境下，DashScope 生成/打标可能超过默认 60 秒。可以在环境变量里调大：
+
+```bash
+set DASHSCOPE_CONNECT_TIMEOUT_SECONDS=10
+set DASHSCOPE_READ_TIMEOUT_SECONDS=180
+```
+
 ### 5. 衣橱入库接口（给“老师要求”的那部分）
 
 - `POST /api/closet/items`（multipart）：`image` + `owner/name/category/...`，可选 `autoTag=true` 自动打标并入库

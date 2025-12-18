@@ -20,7 +20,7 @@ public final class DatabaseProvider {
                             context.getApplicationContext(),
                             AppDatabase.class,
                             "dresscode.db"
-                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8).build();
+                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9).build();
                 }
             }
         }
@@ -122,6 +122,17 @@ public final class DatabaseProvider {
                             "SELECT `title` FROM `outfits` o WHERE o.`id` = `swap_jobs`.`outfitId`" +
                             ") WHERE (`sourceTitle` = '' OR `sourceTitle` IS NULL) AND `outfitId` > 0"
             );
+        }
+    };
+
+    private static final Migration MIGRATION_8_9 = new Migration(8, 9) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("ALTER TABLE `closet_items` ADD COLUMN `remoteId` INTEGER NOT NULL DEFAULT 0");
+            database.execSQL("ALTER TABLE `closet_items` ADD COLUMN `remoteImageUrl` TEXT NOT NULL DEFAULT ''");
+            database.execSQL("ALTER TABLE `closet_items` ADD COLUMN `remoteTagsJson` TEXT NOT NULL DEFAULT ''");
+            database.execSQL("ALTER TABLE `closet_items` ADD COLUMN `remoteTagModel` TEXT NOT NULL DEFAULT ''");
+            database.execSQL("ALTER TABLE `closet_items` ADD COLUMN `remoteTagUpdatedAt` INTEGER NOT NULL DEFAULT 0");
         }
     };
 }

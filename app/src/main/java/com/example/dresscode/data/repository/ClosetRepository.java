@@ -15,11 +15,14 @@ import java.util.concurrent.Executors;
 public class ClosetRepository {
     private final ClosetDao closetDao;
     private final ExecutorService ioExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService networkExecutor = Executors.newSingleThreadExecutor();
     private final String owner;
+    private final RemoteClosetRepository remoteRepository;
 
     public ClosetRepository(Context context, String owner) {
         this.closetDao = DatabaseProvider.get(context).closetDao();
         this.owner = owner == null ? "" : owner;
+        this.remoteRepository = new RemoteClosetRepository(context);
         ioExecutor.execute(() -> closetDao.claimLegacy(this.owner));
     }
 
@@ -32,7 +35,10 @@ public class ClosetRepository {
     }
 
     public void add(ClosetItemEntity item) {
-        ioExecutor.execute(() -> closetDao.insert(item));
+        ioExecutor.execute(() -> {
+            long localId = closetDao.insert(item);
+            syncToRemoteIfNeeded(localId);
+        });
     }
 
     public void delete(long id) {
@@ -77,6 +83,35 @@ public class ClosetRepository {
             }
         } catch (Exception ignored) {
         }
+    }
+
+    private void syncToRemoteIfNeeded(long localId) {
+        if (localId <= 0) {
+            return;
+        }
+        ClosetItemEntity item = closetDao.getById(localId, owner);
+        if (item == null) {
+            return;
+        }
+        // 已同步则不重复上传
+        if (item.remoteId > 0 && item.remoteImageUrl != null && !item.remoteImageUrl.trim().isEmpty()) {
+            return;
+        }
+        networkExecutor.execute(() -> {
+            try {
+                RemoteClosetRepository.RemoteResult result = remoteRepository.uploadAndTag(item);
+                ioExecutor.execute(() -> closetDao.updateRemoteById(
+                        localId,
+                        owner,
+                        result.remoteId,
+                        result.remoteImageUrl,
+                        result.remoteTagsJson,
+                        result.remoteTagModel,
+                        result.remoteTagUpdatedAt
+                ));
+            } catch (Exception ignored) {
+            }
+        });
     }
 
     private String safe(String s) {

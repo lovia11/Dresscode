@@ -48,6 +48,25 @@ public interface ClosetDao {
     @Query("UPDATE closet_items SET isFavorite = :favorite WHERE id = :id AND owner = :owner")
     int setFavorite(long id, String owner, boolean favorite);
 
+    @Query(
+            "UPDATE closet_items SET " +
+                    "remoteId = :remoteId, " +
+                    "remoteImageUrl = :remoteImageUrl, " +
+                    "remoteTagsJson = :remoteTagsJson, " +
+                    "remoteTagModel = :remoteTagModel, " +
+                    "remoteTagUpdatedAt = :remoteTagUpdatedAt " +
+                    "WHERE id = :id AND owner = :owner"
+    )
+    int updateRemoteById(
+            long id,
+            String owner,
+            long remoteId,
+            String remoteImageUrl,
+            String remoteTagsJson,
+            String remoteTagModel,
+            long remoteTagUpdatedAt
+    );
+
     @Query("UPDATE closet_items SET owner = :owner WHERE owner = ''")
     int claimLegacy(String owner);
 }

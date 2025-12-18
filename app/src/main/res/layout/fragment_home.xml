@@ -78,6 +78,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
+        android:minHeight="150dp"
         android:paddingStart="12dp"
         android:paddingEnd="12dp"
         app:layout_constraintBottom_toTopOf="@+id/text_tips_title"
@@ -123,6 +124,8 @@
                 android:id="@+id/text_tips_content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:maxLines="5"
+                android:ellipsize="end"
                 android:text="@string/tips_content_sample"
                 android:textAppearance="?attr/textAppearanceBodyMedium" />
         </LinearLayout>

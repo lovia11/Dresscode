@@ -13,6 +13,8 @@ import com.example.dresscode.data.prefs.AuthRepository;
 import com.example.dresscode.data.prefs.UserPreferencesRepository;
 import com.example.dresscode.data.prefs.WeatherPreferencesRepository;
 import com.example.dresscode.data.repository.ClosetRepository;
+import com.example.dresscode.data.repository.AiRecommendRepository;
+import com.example.dresscode.data.remote.AiRecommendResponse;
 import com.example.dresscode.model.RecommendItem;
 
 import java.util.ArrayList;
@@ -21,13 +23,19 @@ import java.util.List;
 public class HomeViewModel extends AndroidViewModel {
 
     private final androidx.lifecycle.MediatorLiveData<List<RecommendItem>> recommendations = new androidx.lifecycle.MediatorLiveData<>();
+    private final androidx.lifecycle.MutableLiveData<String> tipsText = new androidx.lifecycle.MutableLiveData<>();
 
     private final UserPreferencesRepository userPrefs;
     private final WeatherPreferencesRepository weatherPrefs;
+    private final AiRecommendRepository aiRecommendRepository;
 
     private List<ClosetItemEntity> closetItems = new ArrayList<>();
     private String gender = "";
     private WeatherPreferencesRepository.Snapshot weatherSnapshot = new WeatherPreferencesRepository.Snapshot("", "", "", "");
+
+    private long lastAiRecommendAt = 0;
+    private int aiSeq = 0;
+    private String lastAiRequestKey = "";
 
     public HomeViewModel(@NonNull Application application) {
         super(application);
@@ -35,6 +43,7 @@ public class HomeViewModel extends AndroidViewModel {
         ClosetRepository repository = new ClosetRepository(application, owner);
         userPrefs = new UserPreferencesRepository(application);
         weatherPrefs = new WeatherPreferencesRepository(application);
+        aiRecommendRepository = new AiRecommendRepository(application);
 
         recommendations.addSource(repository.observeAll(), items -> {
             closetItems = items == null ? new ArrayList<>() : items;
@@ -42,10 +51,6 @@ public class HomeViewModel extends AndroidViewModel {
         });
         recommendations.addSource(userPrefs.observeGender(), g -> {
             gender = g == null ? "" : g;
-            update();
-        });
-        recommendations.addSource(weatherPrefs.observeCity(), c -> {
-            // city change will also update snapshot; keep for compatibility
             update();
         });
         recommendations.addSource(weatherPrefs.observeSnapshot(), s -> {
@@ -59,8 +64,18 @@ public class HomeViewModel extends AndroidViewModel {
         return recommendations;
     }
 
+    public LiveData<String> getTipsText() {
+        return tipsText;
+    }
+
     private void update() {
-        recommendations.setValue(buildRecommendations(closetItems, gender, weatherSnapshot));
+        List<RecommendItem> local = buildRecommendations(closetItems, gender, weatherSnapshot);
+        recommendations.setValue(local);
+        // tips 卡片优先显示“本地可用”的内容，联网成功后再覆盖
+        if (tipsText.getValue() == null || tipsText.getValue().trim().isEmpty()) {
+            tipsText.setValue(getApplication().getString(R.string.tips_content_sample));
+        }
+        requestAiRecommendIfNeeded();
     }
 
     private List<RecommendItem> buildRecommendations(List<ClosetItemEntity> closetItems, String gender, WeatherPreferencesRepository.Snapshot snapshot) {
@@ -134,6 +149,147 @@ public class HomeViewModel extends AndroidViewModel {
         }
 
         return result;
+    }
+
+    private void requestAiRecommendIfNeeded() {
+        if (closetItems == null || closetItems.isEmpty()) {
+            return;
+        }
+        long now = System.currentTimeMillis();
+
+        String city = safe(weatherSnapshot.city);
+        String temp = safe(weatherSnapshot.temp);
+        String desc = safe(weatherSnapshot.desc);
+        String g = gender == null || gender.trim().isEmpty() ? "UNISEX" : gender.trim();
+        String key = city + "|" + temp + "|" + desc + "|" + g + "|" + closetItems.size();
+        if (key.equals(lastAiRequestKey) && now - lastAiRecommendAt < 4000) {
+            return;
+        }
+        lastAiRequestKey = key;
+        lastAiRecommendAt = now;
+
+        int seq = ++aiSeq;
+
+        aiRecommendRepository.recommend(closetItems, g, weatherSnapshot, new AiRecommendRepository.ResultCallback() {
+            @Override
+            public void onSuccess(AiRecommendResponse.Result result) {
+                if (seq != aiSeq || result == null) {
+                    return;
+                }
+                applyAiResult(result);
+            }
+
+            @Override
+            public void onError(String message) {
+                // 保持本地推荐即可
+            }
+        });
+    }
+
+    private void applyAiResult(AiRecommendResponse.Result result) {
+        List<RecommendItem> items = new ArrayList<>();
+        String title = result.title == null || result.title.trim().isEmpty()
+                ? getApplication().getString(R.string.title_recommend_today)
+                : result.title.trim();
+        String summary = result.summary == null ? "" : result.summary.trim();
+
+        items.add(new RecommendItem(
+                title,
+                summary.isEmpty() ? "来自后端推荐" : summary,
+                null,
+                R.drawable.ic_outfit_outer
+        ));
+
+        if (result.items != null) {
+            for (AiRecommendResponse.Item it : result.items) {
+                if (it == null) {
+                    continue;
+                }
+                String cat = it.category == null ? "" : it.category.trim();
+                String reason = it.reason == null ? "" : it.reason.trim();
+                String imageUri = findFirstImageUriByCategory(cat);
+                String displayTitle = cat.isEmpty() ? "推荐单品" : ("推荐单品：" + cat);
+                items.add(new RecommendItem(displayTitle, reason.isEmpty() ? "来自后端推荐" : reason, imageUri));
+            }
+        }
+
+        recommendations.setValue(items);
+        tipsText.setValue(formatTips(result));
+    }
+
+    private String findFirstImageUriByCategory(String category) {
+        if (category == null || category.trim().isEmpty() || closetItems == null) {
+            return null;
+        }
+        String c = category.trim();
+        for (ClosetItemEntity it : closetItems) {
+            if (it == null) {
+                continue;
+            }
+            if (c.equals(it.category)) {
+                return it.imageUri;
+            }
+        }
+        return null;
+    }
+
+    private String formatTips(AiRecommendResponse.Result result) {
+        final int maxSummaryChars = 80;
+        final int maxTips = 4;
+        final int maxTipChars = 36;
+        StringBuilder sb = new StringBuilder();
+        if (result.summary != null && !result.summary.trim().isEmpty()) {
+            sb.append(trimTo(result.summary.trim(), maxSummaryChars));
+        }
+        if (result.tips != null && !result.tips.isEmpty()) {
+            if (sb.length() > 0) {
+                // 避免空行导致内容占高，影响“今日推荐”区域
+                sb.append("\n");
+            }
+            int added = 0;
+            for (String t : result.tips) {
+                if (t == null || t.trim().isEmpty()) {
+                    continue;
+                }
+                String line = normalizeTipLine(t);
+                if (line.isEmpty()) {
+                    continue;
+                }
+                sb.append("• ").append(trimTo(line, maxTipChars)).append("\n");
+                added++;
+                if (added >= maxTips) {
+                    break;
+                }
+            }
+        }
+        String out = sb.toString().trim();
+        return out.isEmpty() ? getApplication().getString(R.string.tips_content_sample) : out;
+    }
+
+    private String normalizeTipLine(String s) {
+        if (s == null) {
+            return "";
+        }
+        String t = s.trim();
+        // 模型可能输出包含换行/空行，这里压成一行，避免 UI 被“空行”撑高
+        t = t.replace("\r", " ").replace("\n", " ");
+        t = t.replaceAll("\\s+", " ").trim();
+        return t;
+    }
+
+    private String trimTo(String s, int maxChars) {
+        if (s == null) {
+            return "";
+        }
+        String t = s.trim();
+        if (t.length() <= maxChars) {
+            return t;
+        }
+        return t.substring(0, Math.max(0, maxChars - 1)) + "…";
+    }
+
+    private String safe(String s) {
+        return s == null ? "" : s.trim();
     }
 
     private ClosetItemEntity pickFirstPreferSeason(List<ClosetItemEntity> items, String category, String seasonHint) {

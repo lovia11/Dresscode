@@ -10,7 +10,7 @@ import androidx.room.RoomDatabase;
                 FavoriteEntity.class,
                 SwapJobEntity.class
         },
-        version = 8,
+        version = 9,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {

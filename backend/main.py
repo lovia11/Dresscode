@@ -31,6 +31,8 @@ PUBLIC_BASE_URL = _env("PUBLIC_BASE_URL", "http://127.0.0.1:8000/")
 DASHSCOPE_API_KEY = _env("DASHSCOPE_API_KEY", "")
 TRYON_MAX_WAIT_SECONDS = int(_env("TRYON_MAX_WAIT_SECONDS", "120") or "120")
 VL_MODEL = _env("VL_MODEL", "qwen-vl-plus")
+DASHSCOPE_CONNECT_TIMEOUT_SECONDS = float(_env("DASHSCOPE_CONNECT_TIMEOUT_SECONDS", "10") or "10")
+DASHSCOPE_READ_TIMEOUT_SECONDS = float(_env("DASHSCOPE_READ_TIMEOUT_SECONDS", "180") or "180")
 
 DATA_DIR = Path(os.getenv("DATA_DIR", "backend_data")).resolve()
 UPLOAD_DIR = DATA_DIR / "uploads"
@@ -162,9 +164,15 @@ async def closet_create_item(
 
             tag_result = None
             if autoTag:
-                # 为了符合“模型可访问”的目标：如果是公网服务就传图片 URL，否则用 data URL 兜底。
-                img_input = image_url if _is_public_base_url(PUBLIC_BASE_URL) else _data_url(img_bytes, image.content_type or "image/jpeg")
-                tag_result = _vl_tag_by_image_input(img_input)
+                # 优先使用公网 URL（对模型拉取更友好）；如果调用超时/失败则 fallback 为 data URL（并压缩图片）。
+                try:
+                    if _is_public_base_url(PUBLIC_BASE_URL):
+                        tag_result = _vl_tag_by_image_input(image_url)
+                    else:
+                        raise RuntimeError("PUBLIC_BASE_URL 非公网，改用 data URL")
+                except Exception:
+                    compressed = _shrink_for_vl(img_bytes)
+                    tag_result = _vl_tag_by_image_input(_data_url(compressed, "image/jpeg"))
                 item.tags_json = json.dumps(tag_result, ensure_ascii=False, separators=(",", ":"))
                 item.tag_model = VL_MODEL
                 item.tag_updated_at = now
@@ -290,14 +298,16 @@ def closet_refresh_tag(item_id: int):
                 return JSONResponse(status_code=404, content={"ok": False, "error": "not found"})
 
             image_url = _public_file_url(it.image_name)
-            if _is_public_base_url(PUBLIC_BASE_URL):
-                img_input = image_url
-            else:
+            try:
+                if _is_public_base_url(PUBLIC_BASE_URL):
+                    tag_result = _vl_tag_by_image_input(image_url)
+                else:
+                    raise RuntimeError("PUBLIC_BASE_URL 非公网，改用 data URL")
+            except Exception:
                 p = (UPLOAD_DIR / it.image_name).resolve()
                 img_bytes = p.read_bytes()
-                img_input = _data_url(img_bytes, "image/jpeg")
-
-            tag_result = _vl_tag_by_image_input(img_input)
+                compressed = _shrink_for_vl(img_bytes)
+                tag_result = _vl_tag_by_image_input(_data_url(compressed, "image/jpeg"))
             now = now_ms()
             it.tags_json = json.dumps(tag_result, ensure_ascii=False, separators=(",", ":"))
             it.tag_model = VL_MODEL
@@ -321,6 +331,22 @@ def _encode_jpeg(img: Image.Image, quality: int = 92) -> bytes:
     rgb = img.convert("RGB")
     rgb.save(out, format="JPEG", quality=quality)
     return out.getvalue()
+
+
+def _shrink_for_vl(img_bytes: bytes, max_side: int = 1024) -> bytes:
+    """
+    qwen-vl-plus 接收 data URL 时，为了降低体积与延迟做一次压缩/缩放。
+    仅用于 fallback（当 URL 方案不可用或超时）。
+    """
+    img = Image.open(io.BytesIO(img_bytes))
+    w, h = img.size
+    side = max(w, h)
+    if side > max_side:
+        scale = max_side / float(side)
+        tw = max(1, int(w * scale))
+        th = max(1, int(h * scale))
+        img = img.resize((tw, th))
+    return _encode_jpeg(img, quality=85)
 
 
 def _mock_tryon(person_bytes: bytes, cloth_bytes: bytes) -> bytes:
@@ -377,7 +403,21 @@ def _dashscope_submit_tryon(person_url: str, garment_url: str) -> str:
             "restore_face": True,
         },
     }
-    resp = requests.post(endpoint, headers=headers, data=json.dumps(payload), timeout=30)
+    last_err: Optional[Exception] = None
+    for attempt in range(2):
+        try:
+            resp = requests.post(
+                endpoint,
+                headers=headers,
+                data=json.dumps(payload),
+                timeout=(DASHSCOPE_CONNECT_TIMEOUT_SECONDS, DASHSCOPE_READ_TIMEOUT_SECONDS),
+            )
+            break
+        except (requests.Timeout, requests.ConnectionError) as e:
+            last_err = e
+            time.sleep(1.5)
+    else:
+        raise RuntimeError(f"DashScope 提交超时/网络失败：{last_err}")
     if resp.status_code >= 300:
         raise RuntimeError(f"DashScope 提交失败（HTTP {resp.status_code}）：{resp.text}")
     data = resp.json()
@@ -401,7 +441,15 @@ def _dashscope_poll_result(task_id: str) -> str:
     deadline = time.time() + TRYON_MAX_WAIT_SECONDS
     last_text = ""
     while time.time() < deadline:
-        resp = requests.get(endpoint, headers=headers, timeout=30)
+        try:
+            resp = requests.get(
+                endpoint,
+                headers=headers,
+                timeout=(DASHSCOPE_CONNECT_TIMEOUT_SECONDS, DASHSCOPE_READ_TIMEOUT_SECONDS),
+            )
+        except (requests.Timeout, requests.ConnectionError):
+            time.sleep(1.2)
+            continue
         last_text = resp.text
         if resp.status_code >= 300:
             time.sleep(1.2)
@@ -441,7 +489,9 @@ def _dashscope_tryon(person_bytes: bytes, cloth_bytes: bytes) -> bytes:
 
     task_id = _dashscope_submit_tryon(person_url, cloth_url)
     result_url = _dashscope_poll_result(task_id)
-    img_resp = requests.get(result_url, timeout=60)
+    img_resp = requests.get(
+        result_url, timeout=(DASHSCOPE_CONNECT_TIMEOUT_SECONDS, DASHSCOPE_READ_TIMEOUT_SECONDS)
+    )
     if img_resp.status_code >= 300:
         raise RuntimeError(f"结果图片下载失败（HTTP {img_resp.status_code}）")
     return img_resp.content
@@ -455,7 +505,21 @@ def _dashscope_chat_completions(payload: Dict[str, Any]) -> Dict[str, Any]:
         "Authorization": f"Bearer {DASHSCOPE_API_KEY}",
         "Content-Type": "application/json",
     }
-    resp = requests.post(endpoint, headers=headers, data=json.dumps(payload), timeout=60)
+    last_err: Optional[Exception] = None
+    for attempt in range(2):
+        try:
+            resp = requests.post(
+                endpoint,
+                headers=headers,
+                data=json.dumps(payload),
+                timeout=(DASHSCOPE_CONNECT_TIMEOUT_SECONDS, DASHSCOPE_READ_TIMEOUT_SECONDS),
+            )
+            break
+        except (requests.Timeout, requests.ConnectionError) as e:
+            last_err = e
+            time.sleep(1.5)
+    else:
+        raise RuntimeError(f"DashScope 调用超时/网络失败：{last_err}")
     if resp.status_code >= 300:
         raise RuntimeError(f"DashScope 调用失败（HTTP {resp.status_code}）：{resp.text}")
     return resp.json()

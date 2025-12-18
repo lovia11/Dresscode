@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import com.example.dresscode.data.remote.RetrofitProvider;
 import com.example.dresscode.data.remote.TryOnApi;
 import com.example.dresscode.data.remote.TryOnResponse;
+import com.google.gson.Gson;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -31,6 +32,7 @@ public class TryOnRepository {
 
     private final TryOnApi api;
     private final Context appContext;
+    private final Gson gson = new Gson();
 
     public TryOnRepository(Context context) {
         this.appContext = context.getApplicationContext();
@@ -65,7 +67,16 @@ public class TryOnRepository {
                 @Override
                 public void onResponse(@NonNull Call<TryOnResponse> call, @NonNull Response<TryOnResponse> response) {
                     TryOnResponse body = response.body();
-                    if (!response.isSuccessful() || body == null) {
+                    if (!response.isSuccessful()) {
+                        TryOnResponse err = parseErrorBody(response);
+                        if (err != null && err.error != null && !err.error.trim().isEmpty()) {
+                            callback.onError(err.error.trim());
+                        } else {
+                            callback.onError("请求失败（HTTP " + response.code() + "）");
+                        }
+                        return;
+                    }
+                    if (body == null) {
                         callback.onError("请求失败（HTTP " + response.code() + "）");
                         return;
                     }
@@ -93,6 +104,21 @@ public class TryOnRepository {
             });
         } catch (Exception e) {
             callback.onError("读取图片失败：" + e.getMessage());
+        }
+    }
+
+    private TryOnResponse parseErrorBody(Response<TryOnResponse> response) {
+        try {
+            if (response == null || response.errorBody() == null) {
+                return null;
+            }
+            String text = response.errorBody().string();
+            if (text == null || text.trim().isEmpty()) {
+                return null;
+            }
+            return gson.fromJson(text, TryOnResponse.class);
+        } catch (Exception e) {
+            return null;
         }
     }
 
@@ -132,4 +158,3 @@ public class TryOnRepository {
         }
     }
 }
-

@@ -35,6 +35,12 @@ public class HomeFragment extends Fragment {
 
         HomeViewModel viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
         viewModel.getRecommendations().observe(getViewLifecycleOwner(), items -> adapter.submitList(items));
+        viewModel.getTipsText().observe(getViewLifecycleOwner(), text -> {
+            if (binding == null) {
+                return;
+            }
+            binding.textTipsContent.setText(text == null ? "" : text);
+        });
 
         WeatherViewModel weatherViewModel = new ViewModelProvider(requireActivity()).get(WeatherViewModel.class);
         weatherViewModel.getWeatherInfo().observe(getViewLifecycleOwner(), info -> {

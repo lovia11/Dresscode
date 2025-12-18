@@ -32,11 +32,13 @@
 - 设计：微信式底部 Tab，浅色主题；保持可读性与移动端适配。
 
 ## 当前状态（请每次更新）
-- 日期：2025-12-15
+- 日期：2025-12-16
 - 已完成：登录/注册（本地持久化）；衣橱模块（拍照/选图新增、列表展示、删除）；穿搭展示（列表/筛选/搜索、收藏）；收藏星标区分未收藏（灰/透明）与已收藏（蓝）；换装流程（选人像+选收藏穿搭，占位生成结果）；换装历史（本地保存、可删除）；“我的”页昵称/头像等基础信息；本地数据均按用户隔离。
 - 已完成（天气）：切换到高德 Web 服务 API（逆地理编码 + 实况天气）；城市下拉可切换；点击“定位当前城市”会请求定位并刷新天气；缓存上次天气快照。
 - 进行中：定位体验（模拟器/热点环境下定位不稳定时，需要手动设置模拟器 Location，或在真机开启高精度定位）；天气 UI 的“定位成功后一定切换到杭州/当前城市”依赖设备真实位置。
 - 已完成（后端基础）：FastAPI AI 网关支持 DashScope（aitryon + qwen-vl-plus）；新增“衣橱入库”API，并支持用 `DATABASE_URL` 写入 SQLite/MySQL（用于部署公网数据库与验收）。
+- 已完成（公网部署）：阿里云轻量应用服务器（Ubuntu）已部署后端并对外提供访问（`http://121.40.80.52/health`）；`POST /api/closet/items` 上传图片可入库并生成公网 `imageUrl`（`/files/{name}`）。
+- 已知未完成（打标联网）：`autoTag=true` 调用 `qwen-vl-plus` 在服务器侧出现 `Read timed out (60s)`（需要后续排查服务器到 DashScope 的网络质量/超时策略）。
 - 待做：把后端部署到公网（域名/HTTPS），配置 MySQL（RDS/自建）+ 图片公网访问（/files 或 OSS），让 DashScope 可拉取图片；在 App 里把“新增衣橱/打标签/今日推荐”逐步切到后端；更完善的数据导入与测试截图；git 多次 commit 记录整理。
 - 已知问题/风险：Gradle 有时会因 `C:\Users\LEGION\.gradle\wrapper\dists` 锁/权限导致构建失败；个别环境网络/DNS 会导致第三方天气域名解析失败（已优先采用国内高德接口）；编辑文件时需保持 UTF-8（避免 BOM/乱码）。
 
@@ -48,12 +50,22 @@
 - 2025-12-16：新增本地后端 `backend/`（FastAPI）提供 `/api/tryon`；Android 换装页优先对“收藏衣橱衣物”调用后端生成结果并写入历史。
 - 2025-12-16：后端 try-on 切换为可选 DashScope `aitryon`（远程异步任务轮询）；新增 qwen-vl-plus 预留接口（`/api/vl/tag`、`/api/vl/recommend`）。
 - 2025-12-16：后端新增数据库持久化（SQLite/MySQL），提供衣橱上传/查询/删除/打标接口（满足“图片+标签入库并可公网验收”的目标）。
+- 2025-12-16：阿里云轻量服务器（Ubuntu）部署后端到公网 IP `121.40.80.52`，Nginx 80 端口反代到后端；MySQL 用户改为 `mysql_native_password` 以兼容 PyMySQL。
 
 ## 运行与调试
 - 构建：./gradlew assembleDebug
 - 安装调试：./gradlew installDebug
 - 运行单元/仪器化测试（若有）：./gradlew test / ./gradlew connectedAndroidTest
 - 开发时如需 Mock：在 docs/api-mock.md 记录 Mock 地址与示例。
+
+## 服务器登录与运维（当前：无域名，使用公网 IP）
+- 服务器公网 IP：`121.40.80.52`
+- 登录（本机 PowerShell）：`ssh root@121.40.80.52`
+- 安全退出：输入 `exit`（若当前在虚拟环境，可先输入 `deactivate` 再 `exit`）
+- 后端服务：`systemctl status dresscode-backend --no-pager` / `systemctl restart dresscode-backend`
+- 查看日志：`journalctl -u dresscode-backend -n 200 --no-pager`
+- Nginx：`systemctl status nginx --no-pager` / `nginx -t && systemctl reload nginx`
+- 健康检查：`curl http://121.40.80.52/health`
 
 ## 目录与约定（如有变化请更新）
 - app/ 主工程；单 Activity（MainActivity）。
@@ -107,4 +119,5 @@
 - Flow: upload/capture person -> select saved/local garment -> backend calls aiTryOn -> poll/callback -> show result.
 - Security: API key stays on backend only; document call/auth details in docs/api.md when integrating.
 
+codex resume 019b20c3-1ab3-7080-b0e1-c7e9bc8ca74a
 codex resume 019b20c3-1ab3-7080-b0e1-c7e9bc8ca74a

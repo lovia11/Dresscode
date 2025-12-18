@@ -5,6 +5,7 @@
         <domain includeSubdomains="true">10.0.2.2</domain>
         <domain includeSubdomains="true">127.0.0.1</domain>
         <domain includeSubdomains="true">localhost</domain>
+        <!-- 临时：允许访问公网后端（如 http://121.40.80.52/ ）。如果 IP 变化请同步更新。 -->
+        <domain includeSubdomains="true">121.40.80.52</domain>
     </domain-config>
 </network-security-config>
-

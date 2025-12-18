@@ -1,6 +1,9 @@
 package com.example.dresscode.ui.swap;
 
 import android.app.Application;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -17,6 +20,8 @@ import com.example.dresscode.data.repository.OutfitRepository;
 import com.example.dresscode.data.repository.SwapRepository;
 import com.example.dresscode.data.repository.TryOnRepository;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.List;
 
 public class SwapViewModel extends AndroidViewModel {
@@ -154,8 +159,8 @@ public class SwapViewModel extends AndroidViewModel {
         if (selectedCloset != null && selectedCloset.imageUri != null && !selectedCloset.imageUri.trim().isEmpty()) {
             generating.setValue(true);
             tryOnRepository.tryOn(
-                    android.net.Uri.parse(person),
-                    android.net.Uri.parse(selectedCloset.imageUri),
+                    Uri.parse(person),
+                    Uri.parse(selectedCloset.imageUri),
                     new TryOnRepository.ResultCallback() {
                         @Override
                         public void onSuccess(String resultUri) {
@@ -182,11 +187,43 @@ public class SwapViewModel extends AndroidViewModel {
             return;
         }
 
-        // 离线占位：收藏穿搭目前没有单独的服装图片，先保持原占位逻辑
+        // 真实 try-on：收藏穿搭使用封面资源图当作“服装图”（先跑通链路，后续可替换为更合适的服装素材）
         OutfitCardRow selected = selectedOutfit.getValue();
         if (selected != null) {
-            resultImageUri.setValue(person);
-            swapRepository.addJob("OUTFIT", selected.id, selected.title, "", person, person, "已生成（占位）");
+            Uri clothUri = materializeOutfitCover(selected.coverResId, selected.id);
+            if (clothUri == null) {
+                resultImageUri.setValue(person);
+                swapRepository.addJob("OUTFIT", selected.id, selected.title, "", person, person, "已生成（占位）");
+                return;
+            }
+            generating.setValue(true);
+            tryOnRepository.tryOn(
+                    Uri.parse(person),
+                    clothUri,
+                    new TryOnRepository.ResultCallback() {
+                        @Override
+                        public void onSuccess(String resultUri) {
+                            generating.postValue(false);
+                            resultImageUri.postValue(resultUri == null ? "" : resultUri);
+                            String sourceImageUri = buildAndroidResourceUri(selected.coverResId);
+                            swapRepository.addJob(
+                                    "OUTFIT",
+                                    selected.id,
+                                    selected.title,
+                                    sourceImageUri,
+                                    person,
+                                    resultUri,
+                                    "已生成"
+                            );
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            generating.postValue(false);
+                            generateError.postValue(message == null ? "生成失败" : message);
+                        }
+                    }
+            );
         }
     }
 
@@ -246,5 +283,36 @@ public class SwapViewModel extends AndroidViewModel {
             }
         }
         return null;
+    }
+
+    private Uri materializeOutfitCover(int coverResId, long outfitId) {
+        if (coverResId == 0) {
+            return null;
+        }
+        try {
+            Bitmap bmp = BitmapFactory.decodeResource(getApplication().getResources(), coverResId);
+            if (bmp == null) {
+                return null;
+            }
+            File dir = new File(getApplication().getCacheDir(), "swap_outfit_clothes");
+            if (!dir.exists() && !dir.mkdirs()) {
+                return null;
+            }
+            File out = new File(dir, "outfit_" + outfitId + "_" + coverResId + ".jpg");
+            try (FileOutputStream fos = new FileOutputStream(out)) {
+                bmp.compress(Bitmap.CompressFormat.JPEG, 92, fos);
+                fos.flush();
+            }
+            return Uri.fromFile(out);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private String buildAndroidResourceUri(int resId) {
+        if (resId == 0) {
+            return "";
+        }
+        return "android.resource://" + getApplication().getPackageName() + "/" + resId;
     }
 }
