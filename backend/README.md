@@ -74,6 +74,14 @@ set PUBLIC_BASE_URL=https://你的公网域名或IP
 
 后端会把上传的图片临时保存到 `backend_data/uploads/`，并通过 `GET /files/{name}` 对外提供访问，再把这些 URL 传给 DashScope。
 
+建议：在公网部署时让 Nginx 直接静态托管 `/files/`（比 Python 读文件更快，能减少 DashScope 下载超时）。示例：
+
+```nginx
+location /files/ {
+  alias /var/lib/dresscode/uploads/;
+}
+```
+
 ### 6. DashScope 超时参数（避免 60s 超时）
 
 部分网络环境下，DashScope 生成/打标可能超过默认 60 秒。可以在环境变量里调大：

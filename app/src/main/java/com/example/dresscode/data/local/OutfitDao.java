@@ -66,4 +66,10 @@ public interface OutfitDao {
                     "WHERE o.id = :id LIMIT 1"
     )
     LiveData<OutfitDetailRow> observeOutfitDetail(String owner, long id);
+
+    @Query("SELECT id, coverResId FROM outfits WHERE (aiTagsJson IS NULL OR aiTagsJson = '') AND coverResId != 0 ORDER BY createdAt DESC LIMIT :limit")
+    List<OutfitTagCandidate> listAiTagCandidates(int limit);
+
+    @Query("UPDATE outfits SET tagSource = :tagSource, tagModel = :tagModel, aiTagsJson = :aiTagsJson, tagUpdatedAt = :tagUpdatedAt WHERE id = :id")
+    int updateAiTags(long id, String tagSource, String tagModel, String aiTagsJson, long tagUpdatedAt);
 }

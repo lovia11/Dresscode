@@ -188,18 +188,6 @@ public class HomeViewModel extends AndroidViewModel {
 
     private void applyAiResult(AiRecommendResponse.Result result) {
         List<RecommendItem> items = new ArrayList<>();
-        String title = result.title == null || result.title.trim().isEmpty()
-                ? getApplication().getString(R.string.title_recommend_today)
-                : result.title.trim();
-        String summary = result.summary == null ? "" : result.summary.trim();
-
-        items.add(new RecommendItem(
-                title,
-                summary.isEmpty() ? "来自后端推荐" : summary,
-                null,
-                R.drawable.ic_outfit_outer
-        ));
-
         if (result.items != null) {
             for (AiRecommendResponse.Item it : result.items) {
                 if (it == null) {
@@ -213,6 +201,10 @@ public class HomeViewModel extends AndroidViewModel {
             }
         }
 
+        // 只展示“衣物卡片”，不展示标题/总结卡片；如果模型没给出 items，就保留本地推荐
+        if (items.isEmpty()) {
+            return;
+        }
         recommendations.setValue(items);
         tipsText.setValue(formatTips(result));
     }
@@ -234,18 +226,11 @@ public class HomeViewModel extends AndroidViewModel {
     }
 
     private String formatTips(AiRecommendResponse.Result result) {
-        final int maxSummaryChars = 80;
+        // 只输出“正文 tips”，不输出“根据天气为...”这类总结废话
         final int maxTips = 4;
         final int maxTipChars = 36;
         StringBuilder sb = new StringBuilder();
-        if (result.summary != null && !result.summary.trim().isEmpty()) {
-            sb.append(trimTo(result.summary.trim(), maxSummaryChars));
-        }
         if (result.tips != null && !result.tips.isEmpty()) {
-            if (sb.length() > 0) {
-                // 避免空行导致内容占高，影响“今日推荐”区域
-                sb.append("\n");
-            }
             int added = 0;
             for (String t : result.tips) {
                 if (t == null || t.trim().isEmpty()) {
@@ -255,7 +240,7 @@ public class HomeViewModel extends AndroidViewModel {
                 if (line.isEmpty()) {
                     continue;
                 }
-                sb.append("• ").append(trimTo(line, maxTipChars)).append("\n");
+                sb.append("· ").append(trimTo(line, maxTipChars)).append("\n");
                 added++;
                 if (added >= maxTips) {
                     break;
@@ -274,7 +259,41 @@ public class HomeViewModel extends AndroidViewModel {
         // 模型可能输出包含换行/空行，这里压成一行，避免 UI 被“空行”撑高
         t = t.replace("\r", " ").replace("\n", " ");
         t = t.replaceAll("\\s+", " ").trim();
+        // 去掉常见“废话”前缀
+        String[] prefixes = new String[]{
+                "根据当前天气",
+                "根据当前气温",
+                "根据天气",
+                "基于当前天气",
+                "综合当前天气"
+        };
+        for (String p : prefixes) {
+            if (t.startsWith(p)) {
+                int idx = firstPunctIndex(t);
+                if (idx >= 0 && idx + 1 < t.length()) {
+                    t = t.substring(idx + 1).trim();
+                }
+                break;
+            }
+        }
+        if (t.startsWith("·")) {
+            t = t.substring(1).trim();
+        }
         return t;
+    }
+
+    private int firstPunctIndex(String s) {
+        if (s == null) {
+            return -1;
+        }
+        int best = -1;
+        for (char c : new char[]{'，', '。', '：', ':', ';', '；'}) {
+            int i = s.indexOf(c);
+            if (i >= 0 && (best < 0 || i < best)) {
+                best = i;
+            }
+        }
+        return best;
     }
 
     private String trimTo(String s, int maxChars) {

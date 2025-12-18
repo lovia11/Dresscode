@@ -96,6 +96,7 @@ def _vl_tag_by_image_input(img_url_or_data: str) -> Dict[str, Any]:
     prompt = (
         "请根据图片内容生成穿搭/服饰标签，严格只输出 JSON，不要输出多余文本。"
         "JSON 字段："
+        "category(上衣/下装/外套/连衣裙/鞋子/配饰), "
         "gender(MALE/FEMALE/UNISEX), style, season, scene, weather, colors(array), keywords(array), confidence(0-1)。"
     )
     payload = {
@@ -332,6 +333,21 @@ def _encode_jpeg(img: Image.Image, quality: int = 92) -> bytes:
     rgb.save(out, format="JPEG", quality=quality)
     return out.getvalue()
 
+def _shrink_for_tryon(img_bytes: bytes, max_side: int = 1024) -> bytes:
+    """
+    DashScope aItryon 需要从公网 URL 下载图片，并做 data inspection。
+    为了降低下载耗时/超时概率：在上传后先做缩放与压缩，再对外提供 URL。
+    """
+    img = Image.open(io.BytesIO(img_bytes))
+    w, h = img.size
+    side = max(w, h)
+    if side > max_side:
+        scale = max_side / float(side)
+        tw = max(1, int(w * scale))
+        th = max(1, int(h * scale))
+        img = img.resize((tw, th))
+    return _encode_jpeg(img, quality=90)
+
 
 def _shrink_for_vl(img_bytes: bytes, max_side: int = 1024) -> bytes:
     """
@@ -481,6 +497,10 @@ def _dashscope_tryon(person_bytes: bytes, cloth_bytes: bytes) -> bytes:
         raise RuntimeError(
             "DashScope aItryon 需要公网可访问的图片 URL。请把后端部署到公网，并设置 PUBLIC_BASE_URL 为公网地址。"
         )
+
+    # 先压缩/缩放，提高 DashScope 拉取成功率
+    person_bytes = _shrink_for_tryon(person_bytes)
+    cloth_bytes = _shrink_for_tryon(cloth_bytes)
 
     person_name = _save_upload_bytes(person_bytes, ".jpg")
     cloth_name = _save_upload_bytes(cloth_bytes, ".jpg")

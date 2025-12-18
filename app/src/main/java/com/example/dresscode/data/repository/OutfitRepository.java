@@ -9,7 +9,9 @@ import com.example.dresscode.data.local.OutfitCardRow;
 import com.example.dresscode.data.local.OutfitDetailRow;
 import com.example.dresscode.data.local.OutfitDao;
 import com.example.dresscode.data.local.OutfitEntity;
+import com.example.dresscode.data.local.OutfitTagCandidate;
 import com.example.dresscode.data.local.DatabaseProvider;
+import com.example.dresscode.data.remote.AiTagResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,13 +21,16 @@ import java.util.concurrent.Executors;
 public class OutfitRepository {
     private final OutfitDao outfitDao;
     private final ExecutorService ioExecutor = Executors.newSingleThreadExecutor();
+    private final ExecutorService networkExecutor = Executors.newSingleThreadExecutor();
     private final String owner;
     private final Context appContext;
+    private final AiTagRepository aiTagRepository;
 
     public OutfitRepository(Context context, String owner) {
         this.appContext = context.getApplicationContext();
         this.outfitDao = DatabaseProvider.get(appContext).outfitDao();
         this.owner = owner == null ? "" : owner;
+        this.aiTagRepository = new AiTagRepository(appContext);
         ioExecutor.execute(() -> outfitDao.claimLegacyFavorites(this.owner));
     }
 
@@ -61,6 +66,7 @@ public class OutfitRepository {
     public void ensureSeeded() {
         ioExecutor.execute(() -> {
             if (outfitDao.countOutfits() > 0) {
+                autoTagMissingIfNeeded();
                 return;
             }
             List<OutfitEntity> seed = loadSeedFromAssets();
@@ -68,7 +74,51 @@ public class OutfitRepository {
                 seed = fallbackSeed();
             }
             outfitDao.insertAll(seed);
+            autoTagMissingIfNeeded();
         });
+    }
+
+    private void autoTagMissingIfNeeded() {
+        // 异步为穿搭封面图打标签（写入 aiTagsJson），不阻塞 UI
+        List<OutfitTagCandidate> candidates = outfitDao.listAiTagCandidates(12);
+        if (candidates == null || candidates.isEmpty()) {
+            return;
+        }
+        for (OutfitTagCandidate c : candidates) {
+            if (c == null || c.id <= 0 || c.coverResId == 0) {
+                continue;
+            }
+            networkExecutor.execute(() -> {
+                try {
+                    byte[] jpeg = materializeCoverToJpeg(c.coverResId);
+                    if (jpeg == null || jpeg.length == 0) {
+                        return;
+                    }
+                    AiTagResponse resp = aiTagRepository.tagJpegBytesSync(jpeg);
+                    if (resp == null || !resp.ok || resp.result == null) {
+                        return;
+                    }
+                    String model = resp.model == null ? "" : resp.model;
+                    String json = resp.result.toString();
+                    ioExecutor.execute(() -> outfitDao.updateAiTags(c.id, "AI", model, json, System.currentTimeMillis()));
+                } catch (Exception ignored) {
+                }
+            });
+        }
+    }
+
+    private byte[] materializeCoverToJpeg(int coverResId) {
+        try {
+            android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeResource(appContext.getResources(), coverResId);
+            if (bmp == null) {
+                return null;
+            }
+            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+            bmp.compress(android.graphics.Bitmap.CompressFormat.JPEG, 92, out);
+            return out.toByteArray();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private List<OutfitEntity> loadSeedFromAssets() {

@@ -19,10 +19,14 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import com.example.dresscode.data.prefs.AuthRepository;
 import com.example.dresscode.R;
 import com.example.dresscode.data.local.ClosetItemEntity;
+import com.example.dresscode.data.repository.AiTagRepository;
 import com.example.dresscode.databinding.DialogAddClothingBinding;
 import com.example.dresscode.databinding.FragmentClosetBinding;
 import com.example.dresscode.ui.closet.adapter.ClosetAdapter;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -41,6 +45,7 @@ public class ClosetFragment extends Fragment {
 
     private File pendingImageFile;
     private Uri pendingImageUri;
+    private AiTagRepository aiTagRepository;
 
     @Nullable
     @Override
@@ -50,6 +55,7 @@ public class ClosetFragment extends Fragment {
 
         viewModel = new ViewModelProvider(this).get(ClosetViewModel.class);
         owner = new AuthRepository(requireContext()).getCurrentUsernameOrEmpty();
+        aiTagRepository = new AiTagRepository(requireContext());
         adapter = new ClosetAdapter(new ClosetAdapter.Listener() {
             @Override
             public void onLongPress(ClosetItemEntity item) {
@@ -153,7 +159,7 @@ public class ClosetFragment extends Fragment {
         ));
         dialogBinding.inputCategory.setText(categories.length > 0 ? categories[0] : "", false);
 
-        new MaterialAlertDialogBuilder(requireContext())
+        androidx.appcompat.app.AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.title_add_clothing)
                 .setView(dialogBinding.getRoot())
                 .setNegativeButton(android.R.string.cancel, (d, w) -> {
@@ -208,7 +214,289 @@ public class ClosetFragment extends Fragment {
                         pendingImageUri = null;
                     }
                 })
-                .show();
+                .create();
+        dialog.show();
+
+        // AI 先打标，再让用户确认（失败就让用户手动填）
+        dialogBinding.textAiHint.setText(R.string.hint_ai_tagging);
+        dialogBinding.textAiHint.setVisibility(View.VISIBLE);
+        android.widget.Button btnSave = dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE);
+        if (btnSave != null) {
+            btnSave.setEnabled(false);
+        }
+
+        aiTagRepository.tagImageUriAsync(previewUri, new AiTagRepository.ResultCallback() {
+            @Override
+            public void onSuccess(String model, String resultJson) {
+                if (!isAdded()) {
+                    return;
+                }
+                applyAiToDialog(dialogBinding, resultJson);
+                dialogBinding.textAiHint.setVisibility(View.GONE);
+                if (btnSave != null) {
+                    btnSave.setEnabled(true);
+                }
+            }
+
+            @Override
+            public void onError(String message) {
+                if (!isAdded()) {
+                    return;
+                }
+                dialogBinding.textAiHint.setText(R.string.hint_ai_tag_failed);
+                if (btnSave != null) {
+                    btnSave.setEnabled(true);
+                }
+            }
+        });
+    }
+
+    private void applyAiToDialog(DialogAddClothingBinding dialogBinding, String resultJson) {
+        if (resultJson == null || resultJson.trim().isEmpty()) {
+            return;
+        }
+        try {
+            JsonElement el = JsonParser.parseString(resultJson);
+            if (!el.isJsonObject()) {
+                return;
+            }
+            JsonObject obj = el.getAsJsonObject();
+
+            String category = pickString(obj, "category");
+            if (category.isEmpty()) {
+                category = inferCategoryFromKeywords(obj);
+            }
+            if (!category.isEmpty()) {
+                dialogBinding.inputCategory.setText(mapCategory(category), false);
+            }
+
+            String style = mapStyle(pickString(obj, "style"));
+            if (!style.isEmpty()) {
+                dialogBinding.inputStyle.setText(style);
+            }
+
+            String season = mapSeason(pickString(obj, "season"));
+            if (!season.isEmpty()) {
+                dialogBinding.inputSeason.setText(season);
+            }
+
+            String scene = mapScene(pickString(obj, "scene"));
+            if (!scene.isEmpty()) {
+                dialogBinding.inputScene.setText(scene);
+            }
+
+            String color = mapColor(pickFirstArrayString(obj, "colors"));
+            if (!color.isEmpty()) {
+                dialogBinding.inputColor.setText(color);
+            }
+
+            String currentName = valueOrEmpty(dialogBinding.inputName.getText() == null ? null : dialogBinding.inputName.getText().toString());
+            if (currentName.isEmpty()) {
+                String n = mapCategory(category.isEmpty() ? getString(R.string.default_category) : category);
+                String s = style.isEmpty() ? "" : (" · " + style);
+                dialogBinding.inputName.setText((n + s).trim());
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    private String pickString(JsonObject obj, String key) {
+        try {
+            if (obj == null || key == null) {
+                return "";
+            }
+            JsonElement el = obj.get(key);
+            if (el == null || el.isJsonNull()) {
+                return "";
+            }
+            String v = el.getAsString();
+            return v == null ? "" : v.trim();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    private String pickFirstArrayString(JsonObject obj, String key) {
+        try {
+            if (obj == null || key == null) {
+                return "";
+            }
+            JsonElement el = obj.get(key);
+            if (el == null || !el.isJsonArray()) {
+                return "";
+            }
+            if (el.getAsJsonArray().size() == 0) {
+                return "";
+            }
+            JsonElement first = el.getAsJsonArray().get(0);
+            if (first == null || first.isJsonNull()) {
+                return "";
+            }
+            String v = first.getAsString();
+            return v == null ? "" : v.trim();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    private String inferCategoryFromKeywords(JsonObject obj) {
+        try {
+            JsonElement el = obj == null ? null : obj.get("keywords");
+            if (el == null || !el.isJsonArray()) {
+                return "";
+            }
+            String text = el.toString().toLowerCase(Locale.US);
+            if (text.contains("dress") || text.contains("skirt")) {
+                return "连衣裙";
+            }
+            if (text.contains("coat") || text.contains("jacket") || text.contains("outer")) {
+                return "外套";
+            }
+            if (text.contains("pants") || text.contains("jeans") || text.contains("trousers")) {
+                return "下装";
+            }
+            if (text.contains("shoe") || text.contains("sneaker") || text.contains("boot")) {
+                return "鞋子";
+            }
+            if (text.contains("top") || text.contains("shirt") || text.contains("t-shirt") || text.contains("tank")) {
+                return "上衣";
+            }
+            return "";
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    private String mapCategory(String raw) {
+        String s = valueOrEmpty(raw);
+        if (s.isEmpty()) {
+            return "";
+        }
+        String lower = s.toLowerCase(Locale.US);
+        if (lower.contains("top") || lower.contains("shirt")) {
+            return "上衣";
+        }
+        if (lower.contains("bottom") || lower.contains("pants") || lower.contains("jeans")) {
+            return "下装";
+        }
+        if (lower.contains("outer") || lower.contains("coat") || lower.contains("jacket")) {
+            return "外套";
+        }
+        if (lower.contains("dress")) {
+            return "连衣裙";
+        }
+        if (lower.contains("shoe") || lower.contains("sneaker") || lower.contains("boot")) {
+            return "鞋子";
+        }
+        if (lower.contains("accessory") || lower.contains("bag")) {
+            return "配饰";
+        }
+        return s;
+    }
+
+    private String mapStyle(String raw) {
+        String s = valueOrEmpty(raw);
+        if (s.isEmpty()) {
+            return "";
+        }
+        String lower = s.toLowerCase(Locale.US);
+        if (lower.contains("casual")) {
+            return "休闲";
+        }
+        if (lower.contains("commute") || lower.contains("work")) {
+            return "通勤";
+        }
+        if (lower.contains("sport")) {
+            return "运动";
+        }
+        if (lower.contains("date") || lower.contains("romantic")) {
+            return "约会";
+        }
+        return s;
+    }
+
+    private String mapSeason(String raw) {
+        String s = valueOrEmpty(raw);
+        if (s.isEmpty()) {
+            return "";
+        }
+        String lower = s.toLowerCase(Locale.US);
+        if (lower.contains("spring") && lower.contains("summer")) {
+            return "春夏";
+        }
+        if (lower.contains("autumn") && lower.contains("winter")) {
+            return "秋冬";
+        }
+        if (lower.contains("spring") && lower.contains("autumn")) {
+            return "春秋";
+        }
+        if (lower.contains("winter")) {
+            return "冬";
+        }
+        if (lower.contains("summer")) {
+            return "夏";
+        }
+        if (lower.contains("spring")) {
+            return "春";
+        }
+        if (lower.contains("autumn") || lower.contains("fall")) {
+            return "秋";
+        }
+        if (lower.contains("all")) {
+            return "春秋";
+        }
+        return s;
+    }
+
+    private String mapScene(String raw) {
+        String s = valueOrEmpty(raw);
+        if (s.isEmpty()) {
+            return "";
+        }
+        String lower = s.toLowerCase(Locale.US);
+        if (lower.contains("everyday") || lower.contains("daily")) {
+            return "出街";
+        }
+        if (lower.contains("campus") || lower.contains("school")) {
+            return "校园";
+        }
+        if (lower.contains("commute") || lower.contains("work")) {
+            return "通勤";
+        }
+        if (lower.contains("sport")) {
+            return "运动";
+        }
+        return s;
+    }
+
+    private String mapColor(String raw) {
+        String s = valueOrEmpty(raw);
+        if (s.isEmpty()) {
+            return "";
+        }
+        String lower = s.toLowerCase(Locale.US);
+        if (lower.contains("black")) {
+            return "黑";
+        }
+        if (lower.contains("white")) {
+            return "白";
+        }
+        if (lower.contains("gray") || lower.contains("grey")) {
+            return "灰";
+        }
+        if (lower.contains("blue")) {
+            return "蓝";
+        }
+        if (lower.contains("red")) {
+            return "红";
+        }
+        if (lower.contains("green")) {
+            return "绿";
+        }
+        if (lower.contains("brown")) {
+            return "棕";
+        }
+        return s;
     }
 
     private void showItemActions(ClosetItemEntity item) {

@@ -141,6 +141,8 @@
     <string name="default_unknown">未知</string>
     <string name="default_category">未分类</string>
     <string name="default_clothing_name">%1$s</string>
+    <string name="hint_ai_tagging">AI 识别中…</string>
+    <string name="hint_ai_tag_failed">AI 识别失败，可手动填写后保存。</string>
 
     <string-array name="closet_categories">
         <item>上衣</item>
