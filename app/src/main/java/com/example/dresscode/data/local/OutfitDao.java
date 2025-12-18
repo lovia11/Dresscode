@@ -72,4 +72,34 @@ public interface OutfitDao {
 
     @Query("UPDATE outfits SET tagSource = :tagSource, tagModel = :tagModel, aiTagsJson = :aiTagsJson, tagUpdatedAt = :tagUpdatedAt WHERE id = :id")
     int updateAiTags(long id, String tagSource, String tagModel, String aiTagsJson, long tagUpdatedAt);
+
+    @Query(
+            "UPDATE outfits SET " +
+                    "title = :title, " +
+                    "tags = :tags, " +
+                    "gender = :gender, " +
+                    "style = :style, " +
+                    "season = :season, " +
+                    "scene = :scene, " +
+                    "weather = :weather, " +
+                    "tagSource = :tagSource, " +
+                    "tagModel = :tagModel, " +
+                    "aiTagsJson = :aiTagsJson, " +
+                    "tagUpdatedAt = :tagUpdatedAt " +
+                    "WHERE id = :id"
+    )
+    int updateFromAi(
+            long id,
+            String title,
+            String tags,
+            String gender,
+            String style,
+            String season,
+            String scene,
+            String weather,
+            String tagSource,
+            String tagModel,
+            String aiTagsJson,
+            long tagUpdatedAt
+    );
 }

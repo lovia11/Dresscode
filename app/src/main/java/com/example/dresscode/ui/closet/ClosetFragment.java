@@ -177,7 +177,17 @@ public class ClosetFragment extends Fragment {
                     String scene = valueOrEmpty(dialogBinding.inputScene.getText() == null ? null : dialogBinding.inputScene.getText().toString());
 
                     if (name.isEmpty()) {
-                        name = getString(R.string.default_clothing_name, category.isEmpty() ? getString(R.string.default_category) : category);
+                        String cat = category.isEmpty() ? getString(R.string.default_category) : category;
+                        // 避免默认“未分类”导致名字变成“未分类…”
+                        if (getString(R.string.default_category).equals(cat) && !style.isEmpty() && !getString(R.string.default_unknown).equals(style)) {
+                            name = style;
+                        } else if (!style.isEmpty() && !getString(R.string.default_unknown).equals(style) && !getString(R.string.default_category).equals(cat)) {
+                            name = cat + " · " + style;
+                        } else if (!getString(R.string.default_category).equals(cat)) {
+                            name = cat;
+                        } else {
+                            name = getString(R.string.default_unknown);
+                        }
                     }
                     if (color.isEmpty()) {
                         color = getString(R.string.default_unknown);
@@ -292,9 +302,20 @@ public class ClosetFragment extends Fragment {
 
             String currentName = valueOrEmpty(dialogBinding.inputName.getText() == null ? null : dialogBinding.inputName.getText().toString());
             if (currentName.isEmpty()) {
-                String n = mapCategory(category.isEmpty() ? getString(R.string.default_category) : category);
-                String s = style.isEmpty() ? "" : (" · " + style);
-                dialogBinding.inputName.setText((n + s).trim());
+                String cat = mapCategory(category);
+                String st = mapStyle(pickString(obj, "style"));
+                StringBuilder sb = new StringBuilder();
+                if (!cat.isEmpty() && !cat.equals(getString(R.string.default_category))) {
+                    sb.append(cat);
+                }
+                if (!st.isEmpty() && !st.equals(getString(R.string.default_unknown))) {
+                    if (sb.length() > 0) {
+                        sb.append(" · ");
+                    }
+                    sb.append(st);
+                }
+                // 避免出现“未分类 ·”这类前缀；留空则让用户决定
+                dialogBinding.inputName.setText(sb.toString());
             }
         } catch (Exception ignored) {
         }

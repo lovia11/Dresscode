@@ -96,6 +96,7 @@ def _vl_tag_by_image_input(img_url_or_data: str) -> Dict[str, Any]:
     prompt = (
         "请根据图片内容生成穿搭/服饰标签，严格只输出 JSON，不要输出多余文本。"
         "JSON 字段："
+        "title(中文、简短), tags(中文短语, 用 ' · ' 分隔), "
         "category(上衣/下装/外套/连衣裙/鞋子/配饰), "
         "gender(MALE/FEMALE/UNISEX), style, season, scene, weather, colors(array), keywords(array), confidence(0-1)。"
     )

@@ -12,9 +12,13 @@ import com.example.dresscode.data.local.OutfitEntity;
 import com.example.dresscode.data.local.OutfitTagCandidate;
 import com.example.dresscode.data.local.DatabaseProvider;
 import com.example.dresscode.data.remote.AiTagResponse;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -100,10 +104,274 @@ public class OutfitRepository {
                     }
                     String model = resp.model == null ? "" : resp.model;
                     String json = resp.result.toString();
-                    ioExecutor.execute(() -> outfitDao.updateAiTags(c.id, "AI", model, json, System.currentTimeMillis()));
+                    AiOutfitFields fields = parseOutfitFieldsFromAi(json);
+                    ioExecutor.execute(() -> outfitDao.updateFromAi(
+                            c.id,
+                            safe(fields.title),
+                            safe(fields.tags),
+                            safe(fields.gender),
+                            safe(fields.style),
+                            safe(fields.season),
+                            safe(fields.scene),
+                            safe(fields.weather),
+                            "AI",
+                            model,
+                            json,
+                            System.currentTimeMillis()
+                    ));
                 } catch (Exception ignored) {
                 }
             });
+        }
+    }
+
+    private AiOutfitFields parseOutfitFieldsFromAi(String resultJson) {
+        AiOutfitFields fields = new AiOutfitFields();
+        fields.title = "AI 识别中";
+        fields.tags = "AI 识别中";
+        fields.gender = "UNISEX";
+        fields.style = "";
+        fields.season = "";
+        fields.scene = "";
+        fields.weather = "";
+
+        if (resultJson == null || resultJson.trim().isEmpty()) {
+            return fields;
+        }
+        try {
+            JsonElement el = JsonParser.parseString(resultJson);
+            if (!el.isJsonObject()) {
+                return fields;
+            }
+            JsonObject obj = el.getAsJsonObject();
+            String title = pickString(obj, "title");
+            String tags = pickString(obj, "tags");
+            String gender = pickString(obj, "gender");
+            String style = mapStyle(pickString(obj, "style"));
+            String season = mapSeason(pickString(obj, "season"));
+            String scene = mapScene(pickString(obj, "scene"));
+            String weather = mapWeather(pickString(obj, "weather"));
+
+            if (title.isEmpty()) {
+                title = inferTitle(obj, style, scene);
+            }
+            if (tags.isEmpty()) {
+                tags = buildTags(style, season, scene);
+            } else {
+                tags = normalizeTags(tags);
+            }
+            if (gender.isEmpty()) {
+                gender = "UNISEX";
+            }
+
+            fields.title = title.isEmpty() ? fields.title : title;
+            fields.tags = tags.isEmpty() ? fields.tags : tags;
+            fields.gender = normalizeGender(gender);
+            fields.style = style;
+            fields.season = season;
+            fields.scene = scene;
+            fields.weather = weather;
+        } catch (Exception ignored) {
+        }
+        return fields;
+    }
+
+    private String inferTitle(JsonObject obj, String style, String scene) {
+        String category = pickString(obj, "category");
+        category = mapCategory(category);
+        if (!category.isEmpty() && !style.isEmpty()) {
+            return style + category;
+        }
+        if (!category.isEmpty()) {
+            return category + "搭配";
+        }
+        if (!scene.isEmpty() && !style.isEmpty()) {
+            return scene + style + "穿搭";
+        }
+        return "穿搭推荐";
+    }
+
+    private String buildTags(String style, String season, String scene) {
+        List<String> parts = new ArrayList<>();
+        if (scene != null && !scene.trim().isEmpty()) {
+            parts.add(scene.trim());
+        }
+        if (style != null && !style.trim().isEmpty()) {
+            parts.add(style.trim());
+        }
+        if (season != null && !season.trim().isEmpty()) {
+            parts.add(season.trim());
+        }
+        if (parts.isEmpty()) {
+            return "AI 识别中";
+        }
+        return String.join(" · ", parts);
+    }
+
+    private String normalizeTags(String raw) {
+        String t = safe(raw);
+        if (t.isEmpty()) {
+            return "";
+        }
+        t = t.replace("|", "·").replace("•", "·").replace("·", " · ");
+        t = t.replaceAll("\\s+", " ").trim();
+        t = t.replaceAll("\\s*·\\s*", " · ").trim();
+        return t;
+    }
+
+    private String normalizeGender(String raw) {
+        String g = safe(raw).toUpperCase(Locale.US);
+        if (g.contains("MALE") || g.equals("M")) {
+            return "MALE";
+        }
+        if (g.contains("FEMALE") || g.equals("F")) {
+            return "FEMALE";
+        }
+        return "UNISEX";
+    }
+
+    private String mapCategory(String raw) {
+        String s = safe(raw);
+        if (s.isEmpty()) {
+            return "";
+        }
+        String lower = s.toLowerCase(Locale.US);
+        if (lower.contains("top") || lower.contains("shirt")) {
+            return "上衣";
+        }
+        if (lower.contains("bottom") || lower.contains("pants") || lower.contains("jeans")) {
+            return "下装";
+        }
+        if (lower.contains("outer") || lower.contains("coat") || lower.contains("jacket")) {
+            return "外套";
+        }
+        if (lower.contains("dress")) {
+            return "连衣裙";
+        }
+        if (lower.contains("shoe") || lower.contains("sneaker") || lower.contains("boot")) {
+            return "鞋子";
+        }
+        if (lower.contains("accessory") || lower.contains("bag")) {
+            return "配饰";
+        }
+        return s;
+    }
+
+    private String mapStyle(String raw) {
+        String s = safe(raw);
+        if (s.isEmpty()) {
+            return "";
+        }
+        String lower = s.toLowerCase(Locale.US);
+        if (lower.contains("casual")) {
+            return "休闲";
+        }
+        if (lower.contains("commute") || lower.contains("work")) {
+            return "通勤";
+        }
+        if (lower.contains("sport")) {
+            return "运动";
+        }
+        if (lower.contains("date") || lower.contains("romantic")) {
+            return "约会";
+        }
+        return s;
+    }
+
+    private String mapSeason(String raw) {
+        String s = safe(raw);
+        if (s.isEmpty()) {
+            return "";
+        }
+        String lower = s.toLowerCase(Locale.US);
+        if (lower.contains("spring") && lower.contains("summer")) {
+            return "春夏";
+        }
+        if (lower.contains("autumn") && lower.contains("winter")) {
+            return "秋冬";
+        }
+        if (lower.contains("spring") && lower.contains("autumn")) {
+            return "春秋";
+        }
+        if (lower.contains("winter")) {
+            return "冬";
+        }
+        if (lower.contains("summer")) {
+            return "夏";
+        }
+        if (lower.contains("spring")) {
+            return "春";
+        }
+        if (lower.contains("autumn") || lower.contains("fall")) {
+            return "秋";
+        }
+        if (lower.contains("all")) {
+            return "春秋";
+        }
+        return s;
+    }
+
+    private String mapScene(String raw) {
+        String s = safe(raw);
+        if (s.isEmpty()) {
+            return "";
+        }
+        String lower = s.toLowerCase(Locale.US);
+        if (lower.contains("everyday") || lower.contains("daily")) {
+            return "出街";
+        }
+        if (lower.contains("campus") || lower.contains("school")) {
+            return "校园";
+        }
+        if (lower.contains("commute") || lower.contains("work")) {
+            return "通勤";
+        }
+        if (lower.contains("sport")) {
+            return "运动";
+        }
+        if (lower.contains("date")) {
+            return "约会";
+        }
+        return s;
+    }
+
+    private String mapWeather(String raw) {
+        String s = safe(raw);
+        if (s.isEmpty()) {
+            return "";
+        }
+        String lower = s.toLowerCase(Locale.US);
+        if (lower.contains("rain")) {
+            return "雨";
+        }
+        if (lower.contains("cloud")) {
+            return "多云";
+        }
+        if (lower.contains("hot") || lower.contains("warm")) {
+            return "热";
+        }
+        if (lower.contains("cold")) {
+            return "冷";
+        }
+        if (lower.contains("sun") || lower.contains("clear")) {
+            return "晴";
+        }
+        return s;
+    }
+
+    private String pickString(JsonObject obj, String key) {
+        try {
+            if (obj == null || key == null) {
+                return "";
+            }
+            JsonElement el = obj.get(key);
+            if (el == null || el.isJsonNull()) {
+                return "";
+            }
+            String v = el.getAsString();
+            return v == null ? "" : v.trim();
+        } catch (Exception e) {
+            return "";
         }
     }
 
@@ -221,5 +489,15 @@ public class OutfitRepository {
         String tagModel;
         String aiTagsJson;
         long tagUpdatedAt;
+    }
+
+    private static class AiOutfitFields {
+        String title;
+        String tags;
+        String gender;
+        String style;
+        String season;
+        String scene;
+        String weather;
     }
 }
