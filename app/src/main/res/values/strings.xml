@@ -47,6 +47,7 @@
     <string name="placeholder_swap_no_favorite_closet">还没有收藏衣物，去“衣橱”页点星标收藏吧。</string>
     <string name="action_generate_swap">生成换装</string>
     <string name="placeholder_swap_result">换装结果会展示在这里。</string>
+    <string name="action_back_to_outfits">返回穿搭</string>
     <string name="title_swap_history">历史记录</string>
 
     <string name="label_weather_city">城市</string>

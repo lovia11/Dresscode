@@ -8,11 +8,12 @@
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_weather_detail"
+        style="@style/Widget.DressCode.Card"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        app:cardCornerRadius="16dp"
-        app:cardUseCompatPadding="true"
+        app:strokeColor="@color/dc_outline"
+        app:strokeWidth="1dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">

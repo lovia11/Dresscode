@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.DressCode.Card"
     android:layout_width="200dp"
     android:layout_height="260dp"
     android:layout_margin="8dp"
-    app:cardCornerRadius="14dp"
-    app:cardUseCompatPadding="true">
+    app:strokeColor="@color/dc_outline"
+    app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,7 +20,7 @@
             android:layout_weight="1"
             android:contentDescription="@string/desc_outfit_image"
             android:scaleType="centerCrop"
-            android:background="#EEEEEE" />
+            android:background="@color/dc_surface_variant" />
 
         <LinearLayout
             android:layout_width="match_parent"

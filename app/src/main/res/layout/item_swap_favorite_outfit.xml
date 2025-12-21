@@ -18,7 +18,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:background="#EEEEEE"
+            android:background="@color/dc_surface_variant"
             android:scaleType="centerCrop"
             tools:src="@android:drawable/ic_menu_camera" />
 

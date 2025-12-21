@@ -2,4 +2,36 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- DressCode: playful & cute palette (Light) -->
+    <color name="dc_primary">#FF7C4DFF</color>
+    <color name="dc_on_primary">#FFFFFFFF</color>
+    <color name="dc_primary_container">#FFEDE7FF</color>
+    <color name="dc_on_primary_container">#FF2B1A59</color>
+
+    <color name="dc_secondary">#FFFF6FB5</color>
+    <color name="dc_on_secondary">#FFFFFFFF</color>
+    <color name="dc_secondary_container">#FFFFE2F0</color>
+    <color name="dc_on_secondary_container">#FF4A0F2C</color>
+
+    <color name="dc_tertiary">#FF36CFC9</color>
+    <color name="dc_on_tertiary">#FF00302E</color>
+    <color name="dc_tertiary_container">#FFD6FFFB</color>
+    <color name="dc_on_tertiary_container">#FF003C39</color>
+
+    <color name="dc_error">#FFBA1A1A</color>
+    <color name="dc_on_error">#FFFFFFFF</color>
+    <color name="dc_error_container">#FFFFDAD6</color>
+    <color name="dc_on_error_container">#FF410002</color>
+
+    <color name="dc_background">#FFFFFBFF</color>
+    <color name="dc_on_background">#FF1C1B1F</color>
+    <color name="dc_surface">#FFFFFBFF</color>
+    <color name="dc_on_surface">#FF1C1B1F</color>
+    <color name="dc_surface_variant">#FFF0ECF8</color>
+    <color name="dc_on_surface_variant">#FF4B4653</color>
+    <color name="dc_outline">#FF7A7485</color>
+
+    <color name="dc_shadow">#33000000</color>
+    <color name="dc_scrim">#66000000</color>
 </resources>

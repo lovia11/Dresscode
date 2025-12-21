@@ -23,7 +23,7 @@
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="返回穿搭"
+                android:text="@string/action_back_to_outfits"
                 android:visibility="gone" />
 
             <TextView
@@ -37,11 +37,12 @@
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/card_person"
+            style="@style/Widget.DressCode.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            app:cardCornerRadius="16dp"
-            app:cardUseCompatPadding="true">
+            app:strokeColor="@color/dc_outline"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -61,7 +62,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:adjustViewBounds="true"
-                    android:background="#EEEEEE"
+                    android:background="@color/dc_surface_variant"
                     android:maxHeight="420dp"
                     android:scaleType="fitCenter" />
 
@@ -161,11 +162,12 @@
             android:text="@string/action_generate_swap" />
 
         <com.google.android.material.card.MaterialCardView
+            style="@style/Widget.DressCode.Card"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            app:cardCornerRadius="16dp"
-            app:cardUseCompatPadding="true">
+            app:strokeColor="@color/dc_outline"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -178,7 +180,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:adjustViewBounds="true"
-                    android:background="#EEEEEE"
+                    android:background="@color/dc_surface_variant"
                     android:maxHeight="520dp"
                     android:scaleType="fitCenter" />
 

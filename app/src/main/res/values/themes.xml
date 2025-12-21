@@ -1,8 +1,50 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.DressCode" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <!-- Playful & cute color system -->
+        <item name="colorPrimary">@color/dc_primary</item>
+        <item name="colorOnPrimary">@color/dc_on_primary</item>
+        <item name="colorPrimaryContainer">@color/dc_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/dc_on_primary_container</item>
+
+        <item name="colorSecondary">@color/dc_secondary</item>
+        <item name="colorOnSecondary">@color/dc_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/dc_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/dc_on_secondary_container</item>
+
+        <item name="colorTertiary">@color/dc_tertiary</item>
+        <item name="colorOnTertiary">@color/dc_on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/dc_tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/dc_on_tertiary_container</item>
+
+        <item name="colorError">@color/dc_error</item>
+        <item name="colorOnError">@color/dc_on_error</item>
+        <item name="colorErrorContainer">@color/dc_error_container</item>
+        <item name="colorOnErrorContainer">@color/dc_on_error_container</item>
+
+        <item name="android:colorBackground">@color/dc_background</item>
+        <item name="colorSurface">@color/dc_surface</item>
+        <item name="colorOnSurface">@color/dc_on_surface</item>
+        <item name="colorSurfaceVariant">@color/dc_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/dc_on_surface_variant</item>
+        <item name="colorOutline">@color/dc_outline</item>
+
+        <!-- Window -->
+        <item name="android:windowBackground">@drawable/bg_window</item>
+        <item name="android:statusBarColor">@color/dc_surface</item>
+        <item name="android:navigationBarColor">@color/dc_surface</item>
+
+        <!-- Shape system: round & cute -->
+        <item name="shapeAppearanceSmallComponent">@style/ShapeAppearance.DressCode.Small</item>
+        <item name="shapeAppearanceMediumComponent">@style/ShapeAppearance.DressCode.Medium</item>
+        <item name="shapeAppearanceLargeComponent">@style/ShapeAppearance.DressCode.Large</item>
+
+        <!-- Component defaults -->
+        <item name="materialButtonStyle">@style/Widget.DressCode.Button</item>
+        <item name="chipStyle">@style/Widget.DressCode.Chip</item>
+        <item name="textInputStyle">@style/Widget.DressCode.TextInput</item>
+        <item name="floatingActionButtonStyle">@style/Widget.DressCode.Fab</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.DressCode.BottomSheet</item>
     </style>
 
     <style name="Theme.DressCode" parent="Base.Theme.DressCode" />
