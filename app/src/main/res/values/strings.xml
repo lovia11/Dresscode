@@ -14,7 +14,7 @@
     <string name="placeholder_temperature">--℃</string>
     <string name="placeholder_weather_desc">天气描述</string>
     <string name="placeholder_aqi">空气质量 --</string>
-    <string name="placeholder_weather">天气页面占位</string>
+    <string name="placeholder_weather">天气</string>
     <string name="title_recommend_today">今日推荐</string>
     <string name="placeholder_recommend_empty">先去衣橱添加几件衣服，我再给你推荐今日穿搭。</string>
     <string name="placeholder_outfit_title">穿搭标题</string>
@@ -37,7 +37,7 @@
     <string name="gender_male">男</string>
     <string name="gender_female">女</string>
 
-    <string name="title_swap_flow">智能换装（离线流程）</string>
+    <string name="title_swap_flow">智能换装</string>
     <string name="label_pick_person_image">选择人像</string>
     <string name="label_selected_outfit">已选素材：</string>
     <string name="placeholder_swap_select_person">先选择一张人像照片</string>
@@ -45,8 +45,8 @@
     <string name="placeholder_swap_no_favorites">还没有收藏穿搭，去“穿搭”页点星标收藏吧。</string>
     <string name="label_pick_closet_favorite">或从收藏衣橱选择衣服</string>
     <string name="placeholder_swap_no_favorite_closet">还没有收藏衣物，去“衣橱”页点星标收藏吧。</string>
-    <string name="action_generate_swap">生成换装（占位）</string>
-    <string name="placeholder_swap_result">换装结果会展示在这里（后续接大模型/接口）。</string>
+    <string name="action_generate_swap">生成换装</string>
+    <string name="placeholder_swap_result">换装结果会展示在这里。</string>
     <string name="title_swap_history">历史记录</string>
 
     <string name="label_weather_city">城市</string>

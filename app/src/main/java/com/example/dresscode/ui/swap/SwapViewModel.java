@@ -193,7 +193,7 @@ public class SwapViewModel extends AndroidViewModel {
             Uri clothUri = materializeOutfitCover(selected.coverResId, selected.id);
             if (clothUri == null) {
                 resultImageUri.setValue(person);
-                swapRepository.addJob("OUTFIT", selected.id, selected.title, "", person, person, "已生成（占位）");
+                swapRepository.addJob("OUTFIT", selected.id, selected.title, "", person, person, "已生成");
                 return;
             }
             generating.setValue(true);
