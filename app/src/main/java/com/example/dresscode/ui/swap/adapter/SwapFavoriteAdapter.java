@@ -18,6 +18,7 @@ public class SwapFavoriteAdapter extends RecyclerView.Adapter<SwapFavoriteAdapte
 
     public interface Listener {
         void onSelect(OutfitCardRow item);
+        void onPreview(OutfitCardRow item);
     }
 
     private final List<OutfitCardRow> data = new ArrayList<>();
@@ -52,7 +53,17 @@ public class SwapFavoriteAdapter extends RecyclerView.Adapter<SwapFavoriteAdapte
         holder.binding.textMeta.setText(item.tags);
 
         int bg = parseColorSafe(item.colorHex, 0xFFEEEEEE);
-        holder.binding.viewCover.setBackgroundColor(bg);
+        holder.binding.imageCover.setBackgroundColor(bg);
+        if (item.coverResId != 0) {
+            holder.binding.imageCover.setImageResource(item.coverResId);
+        } else {
+            holder.binding.imageCover.setImageDrawable(null);
+        }
+        holder.binding.imageCover.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onPreview(item);
+            }
+        });
 
         boolean isSelected = item.id == selectedId;
         holder.binding.getRoot().setStrokeWidth(isSelected ? dp(holder.binding.getRoot(), 2) : 0);
@@ -94,4 +105,3 @@ public class SwapFavoriteAdapter extends RecyclerView.Adapter<SwapFavoriteAdapte
         return Math.round(dp * density);
     }
 }
-

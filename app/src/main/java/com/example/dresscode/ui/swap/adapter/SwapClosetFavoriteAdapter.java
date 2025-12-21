@@ -18,6 +18,7 @@ public class SwapClosetFavoriteAdapter extends RecyclerView.Adapter<SwapClosetFa
 
     public interface Listener {
         void onSelect(ClosetItemEntity item);
+        void onPreview(ClosetItemEntity item);
     }
 
     private final List<ClosetItemEntity> data = new ArrayList<>();
@@ -57,6 +58,11 @@ public class SwapClosetFavoriteAdapter extends RecyclerView.Adapter<SwapClosetFa
         } catch (Exception e) {
             holder.binding.imageCover.setImageURI(null);
         }
+        holder.binding.imageCover.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onPreview(item);
+            }
+        });
 
         boolean isSelected = item.id == selectedId;
         holder.binding.getRoot().setStrokeWidth(isSelected ? dp(holder.binding.getRoot(), 2) : 0);
@@ -109,4 +115,3 @@ public class SwapClosetFavoriteAdapter extends RecyclerView.Adapter<SwapClosetFa
         sb.append(p);
     }
 }
-

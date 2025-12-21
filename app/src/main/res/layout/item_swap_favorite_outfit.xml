@@ -13,12 +13,14 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <View
-            android:id="@+id/view_cover"
+        <ImageView
+            android:id="@+id/image_cover"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:background="#EEEEEE" />
+            android:background="#EEEEEE"
+            android:scaleType="centerCrop"
+            tools:src="@android:drawable/ic_menu_camera" />
 
         <TextView
             android:id="@+id/text_title"
@@ -43,4 +45,3 @@
             tools:text="约会 · 春夏 · 温柔" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
-

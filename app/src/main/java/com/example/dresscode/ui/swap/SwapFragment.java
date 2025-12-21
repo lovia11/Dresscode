@@ -47,23 +47,78 @@ public class SwapFragment extends Fragment {
 
         viewModel = new ViewModelProvider(this).get(SwapViewModel.class);
 
+        boolean fromOutfits = false;
         if (savedInstanceState == null) {
             Bundle args = getArguments();
             if (args != null) {
                 long preselectId = args.getLong(ARG_PRESELECT_OUTFIT_ID, -1L);
                 if (preselectId > 0) {
                     viewModel.selectOutfit(preselectId);
+                    fromOutfits = true;
                 }
             }
         }
 
-        adapter = new SwapFavoriteAdapter(item -> viewModel.selectOutfit(item.id));
+        binding.btnBackToOutfits.setVisibility(fromOutfits ? View.VISIBLE : View.GONE);
+        binding.btnBackToOutfits.setOnClickListener(v -> {
+            androidx.navigation.NavController nav = androidx.navigation.fragment.NavHostFragment.findNavController(this);
+            boolean popped = nav.popBackStack(com.example.dresscode.R.id.outfitsFragment, false);
+            if (!popped) {
+                nav.navigate(com.example.dresscode.R.id.outfitsFragment);
+            }
+        });
+
+        adapter = new SwapFavoriteAdapter(new SwapFavoriteAdapter.Listener() {
+            @Override
+            public void onSelect(com.example.dresscode.data.local.OutfitCardRow item) {
+                viewModel.selectOutfit(item.id);
+            }
+
+            @Override
+            public void onPreview(com.example.dresscode.data.local.OutfitCardRow item) {
+                if (item == null) {
+                    return;
+                }
+                com.example.dresscode.ui.preview.ImagePreviewBottomSheet
+                        .newInstance(item.title, item.tags, item.coverResId, "")
+                        .show(getParentFragmentManager(), "image_preview");
+            }
+        });
         binding.recyclerFavorites.setLayoutManager(
                 new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false)
         );
         binding.recyclerFavorites.setAdapter(adapter);
 
-        closetAdapter = new SwapClosetFavoriteAdapter(item -> viewModel.selectClosetItem(item.id));
+        closetAdapter = new SwapClosetFavoriteAdapter(new SwapClosetFavoriteAdapter.Listener() {
+            @Override
+            public void onSelect(com.example.dresscode.data.local.ClosetItemEntity item) {
+                viewModel.selectClosetItem(item.id);
+            }
+
+            @Override
+            public void onPreview(com.example.dresscode.data.local.ClosetItemEntity item) {
+                if (item == null) {
+                    return;
+                }
+                com.example.dresscode.ui.preview.ImagePreviewBottomSheet
+                        .newInstance(item.name, buildMeta(item), 0, item.imageUri)
+                        .show(getParentFragmentManager(), "image_preview");
+            }
+
+            private String buildMeta(com.example.dresscode.data.local.ClosetItemEntity item) {
+                java.util.ArrayList<String> parts = new java.util.ArrayList<>();
+                if (item.category != null && !item.category.trim().isEmpty() && !"未知".equals(item.category.trim())) {
+                    parts.add(item.category.trim());
+                }
+                if (item.style != null && !item.style.trim().isEmpty() && !"未知".equals(item.style.trim())) {
+                    parts.add(item.style.trim());
+                }
+                if (item.scene != null && !item.scene.trim().isEmpty() && !"未知".equals(item.scene.trim())) {
+                    parts.add(item.scene.trim());
+                }
+                return parts.isEmpty() ? "" : android.text.TextUtils.join(" · ", parts);
+            }
+        });
         binding.recyclerFavoriteCloset.setLayoutManager(
                 new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false)
         );
