@@ -14,6 +14,15 @@ import java.util.List;
 
 public class HomeRecommendAdapter extends RecyclerView.Adapter<HomeRecommendAdapter.ViewHolder> {
     private final List<RecommendItem> data = new ArrayList<>();
+    public interface Listener {
+        void onOpen(RecommendItem item);
+    }
+
+    private final Listener listener;
+
+    public HomeRecommendAdapter(Listener listener) {
+        this.listener = listener;
+    }
 
     public void submitList(List<RecommendItem> items) {
         data.clear();
@@ -36,6 +45,11 @@ public class HomeRecommendAdapter extends RecyclerView.Adapter<HomeRecommendAdap
         RecommendItem item = data.get(position);
         holder.binding.textTitle.setText(item.title);
         holder.binding.textMeta.setText(item.meta);
+        holder.binding.getRoot().setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onOpen(item);
+            }
+        });
         if (item.imageResId != 0) {
             holder.binding.imageCover.setImageURI(null);
             holder.binding.imageCover.setImageResource(item.imageResId);

@@ -73,7 +73,7 @@ public class OutfitAdapter extends RecyclerView.Adapter<OutfitAdapter.ViewHolder
         int bg = ColorUtil.parseColorSafe(item.colorHex, 0xFFEEEEEE);
         holder.binding.imageCover.setBackgroundColor(bg);
         if (item.coverResId != 0) {
-            holder.binding.imageCover.setScaleType(android.widget.ImageView.ScaleType.CENTER_INSIDE);
+            holder.binding.imageCover.setScaleType(pickScaleType(holder.binding.imageCover, item.coverResId));
             holder.binding.imageCover.setImageResource(item.coverResId);
         } else {
             holder.binding.imageCover.setImageDrawable(null);
@@ -105,5 +105,19 @@ public class OutfitAdapter extends RecyclerView.Adapter<OutfitAdapter.ViewHolder
                 return fallback;
             }
         }
+    }
+
+    private static android.widget.ImageView.ScaleType pickScaleType(android.widget.ImageView imageView, int resId) {
+        if (imageView == null || resId == 0) {
+            return android.widget.ImageView.ScaleType.CENTER_CROP;
+        }
+        try {
+            String name = imageView.getResources().getResourceEntryName(resId);
+            if (name != null && name.startsWith("outfit_")) {
+                return android.widget.ImageView.ScaleType.CENTER_CROP;
+            }
+        } catch (Exception ignored) {
+        }
+        return android.widget.ImageView.ScaleType.CENTER_INSIDE;
     }
 }

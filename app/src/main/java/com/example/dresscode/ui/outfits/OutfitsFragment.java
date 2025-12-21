@@ -40,10 +40,8 @@ public class OutfitsFragment extends Fragment {
 
             @Override
             public void onOpenDetail(com.example.dresscode.data.local.OutfitCardRow item) {
-                Bundle b = new Bundle();
-                b.putLong(OutfitDetailFragment.ARG_OUTFIT_ID, item.id);
-                NavHostFragment.findNavController(OutfitsFragment.this)
-                        .navigate(com.example.dresscode.R.id.outfitDetailFragment, b);
+                com.example.dresscode.ui.preview.OutfitPreviewBottomSheet.newInstance(item.id)
+                        .show(getParentFragmentManager(), "outfit_preview");
             }
         });
         binding.outfitList.setLayoutManager(new GridLayoutManager(getContext(), 2));

@@ -17,8 +17,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -69,17 +71,90 @@ public class OutfitRepository {
 
     public void ensureSeeded() {
         ioExecutor.execute(() -> {
-            if (outfitDao.countOutfits() > 0) {
-                autoTagMissingIfNeeded();
-                return;
+            // 1) 首次启动：导入种子
+            if (outfitDao.countOutfits() <= 0) {
+                List<OutfitEntity> seed = loadSeedFromAssets();
+                if (seed == null || seed.isEmpty()) {
+                    seed = fallbackSeed();
+                }
+                outfitDao.insertAll(seed);
             }
-            List<OutfitEntity> seed = loadSeedFromAssets();
-            if (seed == null || seed.isEmpty()) {
-                seed = fallbackSeed();
-            }
-            outfitDao.insertAll(seed);
+
+            // 2) 后续升级：如果 assets/outfits.json 新增了图片，也自动补齐（避免必须清数据/卸载重装）
+            mergeNewSeedsFromAssets();
+
+            // 3) 修复旧数据中被 AI 写坏的筛选字段（以 seed 为准）
+            repairSeedFiltersFromAssets();
+
             autoTagMissingIfNeeded();
         });
+    }
+
+    private void mergeNewSeedsFromAssets() {
+        try {
+            List<OutfitEntity> seeds = loadSeedFromAssets();
+            if (seeds == null || seeds.isEmpty()) {
+                return;
+            }
+            List<Integer> existing = outfitDao.listCoverResIds();
+            Set<Integer> existingSet = new HashSet<>();
+            if (existing != null) {
+                existingSet.addAll(existing);
+            }
+            List<OutfitEntity> toInsert = new ArrayList<>();
+            for (OutfitEntity s : seeds) {
+                if (s == null || s.coverResId == 0) {
+                    continue;
+                }
+                if (!existingSet.contains(s.coverResId)) {
+                    // 新增：插入到 DB，createdAt 用当前时间递减，保证排序靠前一点
+                    toInsert.add(new OutfitEntity(
+                            s.title,
+                            s.tags,
+                            s.gender,
+                            s.style,
+                            s.season,
+                            s.scene,
+                            s.weather,
+                            s.colorHex,
+                            s.coverResId,
+                            s.tagSource,
+                            s.tagModel,
+                            s.aiTagsJson,
+                            0L,
+                            System.currentTimeMillis()
+                    ));
+                }
+            }
+            if (!toInsert.isEmpty()) {
+                outfitDao.insertAll(toInsert);
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void repairSeedFiltersFromAssets() {
+        try {
+            List<OutfitEntity> seeds = loadSeedFromAssets();
+            if (seeds == null || seeds.isEmpty()) {
+                return;
+            }
+            for (OutfitEntity s : seeds) {
+                if (s == null || s.coverResId == 0) {
+                    continue;
+                }
+                // 直接覆盖为 seed 的筛选字段，确保“男/女/风格/季节/场景/天气”可用
+                outfitDao.updateFiltersByCoverResId(
+                        s.coverResId,
+                        sanitizeGender(s.gender, "UNISEX"),
+                        sanitizeStyle(s.style, ""),
+                        sanitizeSeason(s.season, ""),
+                        sanitizeScene(s.scene, ""),
+                        sanitizeWeather(s.weather, "")
+                );
+            }
+        } catch (Exception ignored) {
+        }
     }
 
     private void autoTagMissingIfNeeded() {
@@ -105,16 +180,34 @@ public class OutfitRepository {
                     String model = resp.model == null ? "" : resp.model;
                     String json = resp.result.toString();
                     AiOutfitFields fields = parseOutfitFieldsFromAi(json);
+                    String tagSource = safe(c.tagSource);
+
+                    // 对 SEED 数据：避免 AI 误判导致“女装筛选为空”等问题，优先保留原有筛选字段
+                    boolean keepSeedFilters = !tagSource.isEmpty() && tagSource.toUpperCase(Locale.US).startsWith("SEED");
+                    String genderValue = keepSeedFilters ? safe(c.gender) : safe(fields.gender);
+                    String styleValue = keepSeedFilters ? safe(c.style) : safe(fields.style);
+                    String seasonValue = keepSeedFilters ? safe(c.season) : safe(fields.season);
+                    String sceneValue = keepSeedFilters ? safe(c.scene) : safe(fields.scene);
+                    String weatherValue = keepSeedFilters ? safe(c.weather) : safe(fields.weather);
+
+                    // 若 AI 输出不在筛选选项内，则回退原值，确保“按风格/季节/场景/天气”能筛出结果
+                    final String gender = sanitizeGender(genderValue, safe(c.gender));
+                    final String style = sanitizeStyle(styleValue, safe(c.style));
+                    final String season = sanitizeSeason(seasonValue, safe(c.season));
+                    final String scene = sanitizeScene(sceneValue, safe(c.scene));
+                    final String weather = sanitizeWeather(weatherValue, safe(c.weather));
+                    final String finalTagSource = tagSource.isEmpty() ? "AI" : tagSource;
+
                     ioExecutor.execute(() -> outfitDao.updateFromAi(
                             c.id,
                             safe(fields.title),
                             safe(fields.tags),
-                            safe(fields.gender),
-                            safe(fields.style),
-                            safe(fields.season),
-                            safe(fields.scene),
-                            safe(fields.weather),
-                            "AI",
+                            gender,
+                            style,
+                            season,
+                            scene,
+                            weather,
+                            finalTagSource,
                             model,
                             json,
                             System.currentTimeMillis()
@@ -230,6 +323,14 @@ public class OutfitRepository {
         return "UNISEX";
     }
 
+    private String sanitizeGender(String value, String fallback) {
+        String v = normalizeGender(value);
+        if ("MALE".equals(v) || "FEMALE".equals(v) || "UNISEX".equals(v)) {
+            return v;
+        }
+        return normalizeGender(fallback);
+    }
+
     private String mapCategory(String raw) {
         String s = safe(raw);
         if (s.isEmpty()) {
@@ -275,7 +376,35 @@ public class OutfitRepository {
         if (lower.contains("date") || lower.contains("romantic")) {
             return "约会";
         }
+        if (lower.contains("street") || lower.contains("streetwear") || lower.contains("hiphop")) {
+            return "街头";
+        }
+        if (lower.contains("techwear") || lower.contains("functional") || lower.contains("outdoor") || lower.contains("utility")) {
+            return "机能";
+        }
         return s;
+    }
+
+    private String sanitizeStyle(String value, String fallback) {
+        String v = safe(value);
+        if (v.isEmpty()) {
+            v = safe(fallback);
+        }
+        if (v.isEmpty()) {
+            return "";
+        }
+        v = mapStyle(v);
+        switch (v) {
+            case "通勤":
+            case "休闲":
+            case "运动":
+            case "约会":
+            case "街头":
+            case "机能":
+                return v;
+            default:
+                return safe(fallback);
+        }
     }
 
     private String mapSeason(String raw) {
@@ -311,6 +440,29 @@ public class OutfitRepository {
         return s;
     }
 
+    private String sanitizeSeason(String value, String fallback) {
+        String v = safe(value);
+        if (v.isEmpty()) {
+            v = safe(fallback);
+        }
+        if (v.isEmpty()) {
+            return "";
+        }
+        v = mapSeason(v);
+        switch (v) {
+            case "春":
+            case "夏":
+            case "秋":
+            case "冬":
+            case "春夏":
+            case "春秋":
+            case "秋冬":
+                return v;
+            default:
+                return safe(fallback);
+        }
+    }
+
     private String mapScene(String raw) {
         String s = safe(raw);
         if (s.isEmpty()) {
@@ -335,6 +487,27 @@ public class OutfitRepository {
         return s;
     }
 
+    private String sanitizeScene(String value, String fallback) {
+        String v = safe(value);
+        if (v.isEmpty()) {
+            v = safe(fallback);
+        }
+        if (v.isEmpty()) {
+            return "";
+        }
+        v = mapScene(v);
+        switch (v) {
+            case "通勤":
+            case "校园":
+            case "约会":
+            case "运动":
+            case "出街":
+                return v;
+            default:
+                return safe(fallback);
+        }
+    }
+
     private String mapWeather(String raw) {
         String s = safe(raw);
         if (s.isEmpty()) {
@@ -357,6 +530,27 @@ public class OutfitRepository {
             return "晴";
         }
         return s;
+    }
+
+    private String sanitizeWeather(String value, String fallback) {
+        String v = safe(value);
+        if (v.isEmpty()) {
+            v = safe(fallback);
+        }
+        if (v.isEmpty()) {
+            return "";
+        }
+        v = mapWeather(v);
+        switch (v) {
+            case "晴":
+            case "多云":
+            case "雨":
+            case "冷":
+            case "热":
+                return v;
+            default:
+                return safe(fallback);
+        }
     }
 
     private String pickString(JsonObject obj, String key) {

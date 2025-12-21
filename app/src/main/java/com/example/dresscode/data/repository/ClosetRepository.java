@@ -34,6 +34,10 @@ public class ClosetRepository {
         return closetDao.observeFavorites(owner);
     }
 
+    public LiveData<ClosetItemEntity> observeById(long id) {
+        return closetDao.observeById(id, owner);
+    }
+
     public void add(ClosetItemEntity item) {
         ioExecutor.execute(() -> {
             long localId = closetDao.insert(item);

@@ -21,6 +21,9 @@ public interface ClosetDao {
     @Query("SELECT * FROM closet_items WHERE id = :id AND owner = :owner LIMIT 1")
     ClosetItemEntity getById(long id, String owner);
 
+    @Query("SELECT * FROM closet_items WHERE id = :id AND owner = :owner LIMIT 1")
+    LiveData<ClosetItemEntity> observeById(long id, String owner);
+
     @Query("DELETE FROM closet_items WHERE id = :id AND owner = :owner")
     int deleteById(long id, String owner);
 

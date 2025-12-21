@@ -16,6 +16,8 @@ import java.util.List;
 public class ClosetAdapter extends RecyclerView.Adapter<ClosetAdapter.ViewHolder> {
 
     public interface Listener {
+        void onOpen(ClosetItemEntity item);
+
         void onLongPress(ClosetItemEntity item);
 
         void onToggleFavorite(ClosetItemEntity item);
@@ -49,6 +51,11 @@ public class ClosetAdapter extends RecyclerView.Adapter<ClosetAdapter.ViewHolder
         ClosetItemEntity item = data.get(position);
         holder.binding.textName.setText(item.name);
         holder.binding.textMeta.setText(buildMeta(item));
+        holder.binding.getRoot().setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onOpen(item);
+            }
+        });
         holder.binding.getRoot().setOnLongClickListener(v -> {
             if (listener != null) {
                 listener.onLongPress(item);

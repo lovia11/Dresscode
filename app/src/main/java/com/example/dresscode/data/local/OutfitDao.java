@@ -32,12 +32,20 @@ public interface OutfitDao {
                     "FROM outfits o " +
                     "LEFT JOIN favorites f ON f.outfitId = o.id AND f.owner = :owner " +
                     "WHERE (:query IS NULL OR :query = '' OR o.title LIKE '%' || :query || '%' OR o.tags LIKE '%' || :query || '%') " +
+                    // 性别：不限显示全部；男=男+中性；女=女+中性
                     "AND (:gender IS NULL OR :gender = '' OR o.gender = :gender OR o.gender = 'UNISEX') " +
                     "AND (:style IS NULL OR :style = '' OR o.style = :style) " +
-                    "AND (:season IS NULL OR :season = '' OR o.season = :season) " +
+                    // 季节：支持 “春/夏/秋/冬” 这种单季节筛选匹配 “春夏/春秋/秋冬” 等组合
+                    "AND (:season IS NULL OR :season = '' OR o.season = :season OR (LENGTH(:season) = 1 AND o.season LIKE '%' || :season || '%')) " +
                     "AND (:scene IS NULL OR :scene = '' OR o.scene = :scene) " +
                     "AND (:weather IS NULL OR :weather = '' OR o.weather = :weather) " +
-                    "ORDER BY o.createdAt DESC"
+                    "ORDER BY " +
+                    "CASE " +
+                    "WHEN (:gender IS NULL OR :gender = '') THEN 0 " +
+                    "WHEN o.gender = :gender THEN 0 " +
+                    "WHEN o.gender = 'UNISEX' THEN 1 " +
+                    "ELSE 2 END, " +
+                    "o.createdAt DESC"
     )
     LiveData<List<OutfitCardRow>> observeOutfits(
             String owner,
@@ -67,11 +75,22 @@ public interface OutfitDao {
     )
     LiveData<OutfitDetailRow> observeOutfitDetail(String owner, long id);
 
-    @Query("SELECT id, coverResId FROM outfits WHERE (aiTagsJson IS NULL OR aiTagsJson = '') AND coverResId != 0 ORDER BY createdAt DESC LIMIT :limit")
+    @Query(
+            "SELECT id, coverResId, tagSource, gender, style, season, scene, weather " +
+                    "FROM outfits " +
+                    "WHERE (aiTagsJson IS NULL OR aiTagsJson = '') AND coverResId != 0 " +
+                    "ORDER BY createdAt DESC LIMIT :limit"
+    )
     List<OutfitTagCandidate> listAiTagCandidates(int limit);
 
     @Query("UPDATE outfits SET tagSource = :tagSource, tagModel = :tagModel, aiTagsJson = :aiTagsJson, tagUpdatedAt = :tagUpdatedAt WHERE id = :id")
     int updateAiTags(long id, String tagSource, String tagModel, String aiTagsJson, long tagUpdatedAt);
+
+    @Query("SELECT coverResId FROM outfits WHERE coverResId != 0")
+    List<Integer> listCoverResIds();
+
+    @Query("UPDATE outfits SET gender = :gender, style = :style, season = :season, scene = :scene, weather = :weather WHERE coverResId = :coverResId")
+    int updateFiltersByCoverResId(int coverResId, String gender, String style, String season, String scene, String weather);
 
     @Query(
             "UPDATE outfits SET " +

@@ -2,6 +2,7 @@ package com.example.dresscode.ui.outfits.detail;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,8 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.example.dresscode.R;
 import com.example.dresscode.data.local.OutfitDetailRow;
 import com.example.dresscode.databinding.FragmentOutfitDetailBinding;
+
+import java.util.ArrayList;
 
 public class OutfitDetailFragment extends Fragment {
 
@@ -36,8 +39,6 @@ public class OutfitDetailFragment extends Fragment {
             outfitId = args.getLong(ARG_OUTFIT_ID, -1L);
         }
         viewModel.setOutfitId(outfitId);
-
-        binding.btnBack.setOnClickListener(v -> NavHostFragment.findNavController(this).navigateUp());
 
         binding.btnTrySwap.setOnClickListener(v -> {
             if (outfitId <= 0) {
@@ -64,10 +65,13 @@ public class OutfitDetailFragment extends Fragment {
         binding.textTags.setText(row.tags);
         binding.textMeta.setText(row.style + " · " + row.season + " · " + row.scene + " · " + row.weather);
 
+        // 纠正 meta 分隔符（避免出现乱码分隔符）
+        binding.textMeta.setText(buildMeta(row));
+
         if (row.coverResId != 0) {
             binding.imageCover.setImageURI(null);
             binding.imageCover.setImageResource(row.coverResId);
-            binding.imageCover.setScaleType(android.widget.ImageView.ScaleType.CENTER_INSIDE);
+            binding.imageCover.setScaleType(pickScaleType(row.coverResId));
         } else {
             binding.imageCover.setImageURI((Uri) null);
         }
@@ -81,6 +85,37 @@ public class OutfitDetailFragment extends Fragment {
         binding.btnFavorite.setAlpha(row.isFavorite ? 1f : 0.6f);
 
         binding.btnFavorite.setOnClickListener(v -> viewModel.toggleFavorite(row.id, !row.isFavorite));
+    }
+
+    private String buildMeta(OutfitDetailRow row) {
+        ArrayList<String> parts = new ArrayList<>();
+        if (row.style != null && !row.style.trim().isEmpty()) {
+            parts.add(row.style.trim());
+        }
+        if (row.season != null && !row.season.trim().isEmpty()) {
+            parts.add(row.season.trim());
+        }
+        if (row.scene != null && !row.scene.trim().isEmpty()) {
+            parts.add(row.scene.trim());
+        }
+        if (row.weather != null && !row.weather.trim().isEmpty()) {
+            parts.add(row.weather.trim());
+        }
+        return parts.isEmpty() ? "" : TextUtils.join(" · ", parts);
+    }
+
+    private android.widget.ImageView.ScaleType pickScaleType(int resId) {
+        if (resId == 0) {
+            return android.widget.ImageView.ScaleType.CENTER_CROP;
+        }
+        try {
+            String name = requireContext().getResources().getResourceEntryName(resId);
+            if (name != null && name.startsWith("outfit_")) {
+                return android.widget.ImageView.ScaleType.CENTER_CROP;
+            }
+        } catch (Exception ignored) {
+        }
+        return android.widget.ImageView.ScaleType.CENTER_INSIDE;
     }
 
     @Override

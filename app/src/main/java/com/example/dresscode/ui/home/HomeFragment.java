@@ -30,7 +30,14 @@ public class HomeFragment extends Fragment {
         binding.recyclerRecommend.setLayoutManager(
                 new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false)
         );
-        adapter = new HomeRecommendAdapter();
+        adapter = new HomeRecommendAdapter(item -> {
+            if (item == null) {
+                return;
+            }
+            com.example.dresscode.ui.preview.ImagePreviewBottomSheet
+                    .newInstance(item.title, item.meta, item.imageResId, item.imageUri)
+                    .show(getParentFragmentManager(), "image_preview");
+        });
         binding.recyclerRecommend.setAdapter(adapter);
 
         HomeViewModel viewModel = new ViewModelProvider(this).get(HomeViewModel.class);

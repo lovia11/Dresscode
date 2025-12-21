@@ -58,6 +58,15 @@ public class ClosetFragment extends Fragment {
         aiTagRepository = new AiTagRepository(requireContext());
         adapter = new ClosetAdapter(new ClosetAdapter.Listener() {
             @Override
+            public void onOpen(ClosetItemEntity item) {
+                if (item == null) {
+                    return;
+                }
+                com.example.dresscode.ui.preview.ClosetPreviewBottomSheet.newInstance(item.id)
+                        .show(getParentFragmentManager(), "closet_preview");
+            }
+
+            @Override
             public void onLongPress(ClosetItemEntity item) {
                 showItemActions(item);
             }

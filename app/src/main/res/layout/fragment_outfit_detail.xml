@@ -6,51 +6,32 @@
     android:layout_height="match_parent"
     tools:context=".ui.outfits.detail.OutfitDetailFragment">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar_detail"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="?attr/colorSurface"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:title="@string/title_outfits" />
-
-    <ImageButton
-        android:id="@+id/btn_back"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="8dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="@android:string/cancel"
-        android:src="@android:drawable/ic_media_previous"
-        app:tint="?attr/colorOnSurface"
-        app:layout_constraintStart_toStartOf="@id/toolbar_detail"
-        app:layout_constraintTop_toTopOf="@id/toolbar_detail"
-        app:layout_constraintBottom_toBottomOf="@id/toolbar_detail" />
-
-    <ImageButton
-        android:id="@+id/btn_favorite"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginEnd="8dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="@string/action_toggle_favorite"
-        android:src="@android:drawable/btn_star_big_off"
-        app:layout_constraintEnd_toEndOf="@id/toolbar_detail"
-        app:layout_constraintTop_toTopOf="@id/toolbar_detail"
-        app:layout_constraintBottom_toBottomOf="@id/toolbar_detail" />
-
-    <ImageView
-        android:id="@+id/image_cover"
+    <FrameLayout
+        android:id="@+id/cover_container"
         android:layout_width="0dp"
         android:layout_height="240dp"
         android:layout_margin="16dp"
-        android:background="#EEEEEE"
-        android:scaleType="centerInside"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar_detail" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/image_cover"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#EEEEEE"
+            android:scaleType="centerInside" />
+
+        <ImageButton
+            android:id="@+id/btn_favorite"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="top|end"
+            android:layout_margin="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/action_toggle_favorite"
+            android:src="@android:drawable/btn_star_big_off" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/text_title"
@@ -61,7 +42,7 @@
         android:textAppearance="?attr/textAppearanceTitleLarge"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/image_cover"
+        app:layout_constraintTop_toBottomOf="@id/cover_container"
         tools:text="法式连衣裙" />
 
     <TextView
@@ -103,4 +84,3 @@
         app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-
