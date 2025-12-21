@@ -122,6 +122,7 @@
     </string-array>
 
     <string name="placeholder_closet_empty">衣橱还是空的。\n点击右下角 + 添加你的衣服吧。</string>
+    <string name="placeholder_outfits_empty">没有找到匹配的穿搭。\n试试调整筛选条件。</string>
     <string name="action_add_clothing">添加衣服</string>
     <string name="title_add_clothing">添加衣服</string>
     <string name="action_take_photo">拍照添加</string>

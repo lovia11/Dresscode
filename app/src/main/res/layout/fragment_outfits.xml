@@ -38,35 +38,52 @@
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_gender"
-            style="@style/Widget.Material3.Chip.Filter"
+            style="@style/Widget.DressCode.Chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/filter_gender" />
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_style"
-            style="@style/Widget.Material3.Chip.Filter"
+            style="@style/Widget.DressCode.Chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/filter_style" />
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_season"
-            style="@style/Widget.Material3.Chip.Filter"
+            style="@style/Widget.DressCode.Chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/filter_season" />
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_scene"
-            style="@style/Widget.Material3.Chip.Filter"
+            style="@style/Widget.DressCode.Chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/filter_scene" />
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_weather"
-            style="@style/Widget.Material3.Chip.Filter"
+            style="@style/Widget.DressCode.Chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/filter_weather" />
     </com.google.android.material.chip.ChipGroup>
+
+    <TextView
+        android:id="@+id/text_empty"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="24dp"
+        android:background="@drawable/bg_empty_state"
+        android:gravity="center"
+        android:padding="18dp"
+        android:text="@string/placeholder_outfits_empty"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/filter_group"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/outfit_list"
@@ -78,5 +95,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         tools:listitem="@layout/item_outfit_card" />
+
+    <include
+        android:id="@+id/skeleton_container"
+        layout="@layout/view_skeleton_grid"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="8dp"
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@id/filter_group"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

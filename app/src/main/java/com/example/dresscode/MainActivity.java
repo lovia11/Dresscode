@@ -2,6 +2,7 @@ package com.example.dresscode;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
@@ -47,6 +48,19 @@ public class MainActivity extends AppCompatActivity {
         ).build();
         NavigationUI.setupWithNavController(binding.toolbar, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.bottomNav, navController);
+
+        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+            int id = destination.getId();
+            boolean topLevel =
+                    id == R.id.homeFragment ||
+                            id == R.id.outfitsFragment ||
+                            id == R.id.swapFragment ||
+                            id == R.id.closetFragment ||
+                            id == R.id.profileFragment;
+
+            binding.toolbar.setVisibility(topLevel ? View.GONE : View.VISIBLE);
+            binding.toolbar.setTitle("");
+        });
     }
 
     @Override

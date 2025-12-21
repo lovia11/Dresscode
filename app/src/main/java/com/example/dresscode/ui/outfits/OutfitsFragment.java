@@ -84,7 +84,16 @@ public class OutfitsFragment extends Fragment {
                 viewModel::setWeatherFilter
         ));
 
-        viewModel.getOutfits().observe(getViewLifecycleOwner(), items -> adapter.submitList(items));
+        viewModel.getOutfits().observe(getViewLifecycleOwner(), items -> {
+            if (binding == null) {
+                return;
+            }
+            binding.skeletonContainer.getRoot().setVisibility(View.GONE);
+            adapter.submitList(items);
+            boolean empty = items == null || items.isEmpty();
+            binding.textEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);
+            binding.outfitList.setVisibility(empty ? View.GONE : View.VISIBLE);
+        });
         viewModel.getChipGenderText().observe(getViewLifecycleOwner(), text -> binding.chipGender.setText(text));
         viewModel.getChipStyleText().observe(getViewLifecycleOwner(), text -> binding.chipStyle.setText(text));
         viewModel.getChipSeasonText().observe(getViewLifecycleOwner(), text -> binding.chipSeason.setText(text));

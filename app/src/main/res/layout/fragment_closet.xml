@@ -11,9 +11,12 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="24dp"
+        android:background="@drawable/bg_empty_state"
         android:gravity="center"
+        android:padding="18dp"
         android:text="@string/placeholder_closet_empty"
         android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:textColor="?attr/colorOnSurfaceVariant"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -32,6 +35,18 @@
         app:layout_constraintVertical_bias="0.0"
         tools:listitem="@layout/item_closet_clothing" />
 
+    <include
+        android:id="@+id/skeleton_container"
+        layout="@layout/view_skeleton_grid"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="8dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_add_clothing"
         android:layout_width="wrap_content"
@@ -43,4 +58,3 @@
         app:srcCompat="@android:drawable/ic_input_add" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-

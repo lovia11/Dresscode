@@ -128,6 +128,7 @@ public class ClosetFragment extends Fragment {
         });
 
         viewModel.getClosetItems().observe(getViewLifecycleOwner(), items -> {
+            binding.skeletonContainer.getRoot().setVisibility(View.GONE);
             adapter.submitList(items);
             boolean empty = items == null || items.isEmpty();
             binding.textEmpty.setVisibility(empty ? View.VISIBLE : View.GONE);
